@@ -8,3 +8,5 @@ router.get('/medicinename' , medicine)
       .get('/medicine/:id', getMedicineById);
 
 module.exports = router;
+
+

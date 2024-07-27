@@ -2,6 +2,21 @@ const db = require('../utlis/database');
 const axios = require('axios');
 const cheerio = require('cheerio');
 
+async function loadTranslateModule() {
+    return await import('translate');
+}
+
+async function translatePersian(text) {
+    try {
+        const translate = await loadTranslateModule();
+        translate.engine = 'libre';
+        const res = await translate.default(text, 'fa');
+        return res;
+    } catch (error) {
+        console.log(`Error translatePersian: ${error.message}`);
+    }
+}
+
 async function fetchHTML(url) {
     try {
         const { data } = await axios.get(url);
@@ -10,6 +25,7 @@ async function fetchHTML(url) {
         console.error(`Error fetching HTML: ${error.message}`);
     }
 }
+
 function extractDrugInfo(html) {
     const $ = cheerio.load(html);
     const paragraphs = [];
@@ -22,17 +38,21 @@ function extractDrugInfo(html) {
     return paragraphs;
 }
 
+class Medicine {
 
-class Medicine{
-
-    async getMedicine(){
-        const query = "select * from medicine";
-        let [ list ] = await db.connection.execute(query);
-        return list;
+    async getMedicine() {
+        const query = "SELECT * FROM medicine";
+        try {
+            const [list] = await db.connection.execute(query);
+            return list;
+        } catch (error) {
+            console.error("Error executing query:", error);
+            throw error;
+        }
     }
 
     async searchMedicine(items) {
-        const { drug_name , ATCC_code } = items;
+        const { drug_name, ATCC_code } = items;
         let query = "SELECT * FROM medicine WHERE 1=1";
         let queryParams = [];
 
@@ -54,14 +74,15 @@ class Medicine{
         }
     }
 
-    async getMedicineById(id) {
+    async getMedicineById(id, res) { // Add res as parameter to handle response
         const query = "SELECT * FROM medicine WHERE ATCC_code = ?";
         try {
             const [rows] = await db.connection.execute(query, [id]);
 
             if (rows.length > 0) {
                 const drugName = rows[0].drug_name;
-                const url = `https://en.wikipedia.org/wiki/${drugName}`;
+                const translation = await translatePersian(drugName);
+                const url = `https://fa.wikipedia.org/wiki/${translation}`;
                 const html = await fetchHTML(url);
 
                 if (html) {
