@@ -9,18 +9,18 @@ class Medicine{
     }
 
     async searchMedicine(items) {
-        const { name , code } = items;
+        const { drug_name , ATCC_code } = items;
         let query = "SELECT * FROM medicine WHERE 1=1";
         let queryParams = [];
 
-        if (name) {
-            query += " AND name LIKE ?";
-            queryParams.push(`%${name}%`);
+        if (drug_name) {
+            query += " AND drug_name LIKE ?";
+            queryParams.push(`%${drug_name}%`);
         }
 
-        if (code) {
-            query += " AND code LIKE ?";
-            queryParams.push(`%${code}%`);
+        if (ATCC_code) {
+            query += " AND ATCC_code LIKE ?";
+            queryParams.push(`%${ATCC_code}%`);
         }
         console.log(query);
         console.log(queryParams);
@@ -34,7 +34,7 @@ class Medicine{
     }
 
     async getMedicineById(id) {
-        const query = "SELECT * FROM medicine WHERE medicine_id = ?";
+        const query = "SELECT * FROM medicine WHERE ATCC_code = ?";
         try {
             const [rows] = await db.connection.execute(query, [id]);
             return rows[0];

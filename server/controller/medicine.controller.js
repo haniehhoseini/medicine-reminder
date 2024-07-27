@@ -12,5 +12,6 @@ exports.searchMedicine = async (req , res ) =>{
 
 exports.getMedicineById = async (req , res ) =>{
     let answer = await medicine.getMedicineById(req.params.id);
+    console.log(req.params.id);
     res.json(answer);
 };

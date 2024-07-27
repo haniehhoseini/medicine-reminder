@@ -30,8 +30,8 @@ class Auth{
     
     async register(items){
         if (await this.exitRegister(items)) {
-            const { codemeli, password, firstname, lastname, mobile, address, gender, image_url, birthday, relatives_id } = items;
-            const query = "INSERT INTO user (codemeli, password, firstname, lastname, mobile, address, gender, image_url, birthday, relatives_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            const { codemeli, password, firstname, lastname, mobile, address, gender, image_url, birthday, relatives_id , role } = items;
+            const query = "INSERT INTO user (codemeli, password, firstname, lastname, mobile, address, gender, image_url, birthday, relatives_id , role) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,? )";
             const hashpassword = await bcrypt.hashSync(password, 10);
             
             const values = [
@@ -44,7 +44,8 @@ class Auth{
                 gender ?? null,
                 image_url ?? null,
                 birthday ?? null,
-                relatives_id ?? null
+                relatives_id ?? null,
+                role ?? null
             ];
             
             let res;
