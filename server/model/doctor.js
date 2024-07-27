@@ -45,6 +45,17 @@ class Doctor {
             throw error;
         }
     }
+    
+    async getDoctorById(id) {
+        const query = "SELECT * FROM doctor WHERE doctor_id = ?";
+        try {
+            const [rows] = await db.connection.execute(query, [id]);
+            return rows[0];
+        } catch (error) {
+            console.error("Error executing query:", error);
+            throw error;
+        }
+    }
 }
 
 module.exports = new Doctor();

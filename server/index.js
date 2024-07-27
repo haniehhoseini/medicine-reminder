@@ -8,7 +8,7 @@ const doctorRoute = require("./routes/doctor.route");
 const companyRoute = require("./routes/company.route");
 
 const app = express();
-const port = 4444;
+const port = 1111;
 
 app.use(cors());
 app.use(express.json());
