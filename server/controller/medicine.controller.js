@@ -9,3 +9,8 @@ exports.searchMedicine = async (req , res ) =>{
     let answer = await medicine.searchMedicine(req.body);
     res.json(answer);
 };
+
+exports.getMedicineById = async (req , res ) =>{
+    let answer = await medicine.getMedicineById(req.params.id);
+    res.json(answer);
+};
