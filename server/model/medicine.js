@@ -1,4 +1,27 @@
 const db = require('../utlis/database');
+const axios = require('axios');
+const cheerio = require('cheerio');
+
+async function fetchHTML(url) {
+    try {
+        const { data } = await axios.get(url);
+        return data;
+    } catch (error) {
+        console.error(`Error fetching HTML: ${error.message}`);
+    }
+}
+function extractDrugInfo(html) {
+    const $ = cheerio.load(html);
+    const paragraphs = [];
+    $('p').each((i, element) => {
+        const text = $(element).text().trim();
+        if (text) {
+            paragraphs.push(text);
+        }
+    });
+    return paragraphs;
+}
+
 
 class Medicine{
 
@@ -22,8 +45,6 @@ class Medicine{
             query += " AND ATCC_code LIKE ?";
             queryParams.push(`%${ATCC_code}%`);
         }
-        console.log(query);
-        console.log(queryParams);
         try {
             const [rows] = await db.connection.execute(query, queryParams);
             return rows;
@@ -37,10 +58,24 @@ class Medicine{
         const query = "SELECT * FROM medicine WHERE ATCC_code = ?";
         try {
             const [rows] = await db.connection.execute(query, [id]);
-            return rows[0];
+
+            if (rows.length > 0) {
+                const drugName = rows[0].drug_name;
+                const url = `https://en.wikipedia.org/wiki/${drugName}`;
+                const html = await fetchHTML(url);
+
+                if (html) {
+                    const drugInfo = extractDrugInfo(html);
+                    return drugInfo;
+                } else {
+                    res.status(500).send('Failed to retrieve HTML from Wikipedia');
+                }
+            } else {
+                res.status(404).send('Drug not found');
+            }
         } catch (error) {
-            console.error("Error executing query:", error);
-            throw error;
+            res.status(500).send('Database error');
+            console.error('Database error:', error);
         }
     }
 }
