@@ -74,7 +74,7 @@ class Medicine {
         }
     }
 
-    async getMedicineById(id, res) { // Add res as parameter to handle response
+    async getMedicineById(id, res) { 
         const query = "SELECT * FROM medicine WHERE ATCC_code = ?";
         try {
             const [rows] = await db.connection.execute(query, [id]);
@@ -97,6 +97,160 @@ class Medicine {
         } catch (error) {
             res.status(500).send('Database error');
             console.error('Database error:', error);
+        }
+    }
+
+    async addMedicine(items) {
+        const { 
+            drug_name, 
+            salt, 
+            dosag_form, 
+            strengh, 
+            route_of_use, 
+            ATCC_code, 
+            ingredient, 
+            approved_clinical_indication, 
+            access_level, 
+            remarks, 
+            date 
+        } = items;
+    
+        const checkQuery = "SELECT * FROM medicine WHERE ATCC_code = ?";
+        const insertQuery = `
+            INSERT INTO medicine (
+                drug_name,
+                salt,
+                dosag_form,
+                strengh,
+                route_of_use,
+                ATCC_code,
+                ingredient,
+                approved_clinical_indication,
+                access_level,
+                remarks,
+                date
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `;
+    
+        const insertValues = [
+            drug_name ?? null,
+            salt ?? null,
+            dosag_form ?? null,
+            strengh ?? null,
+            route_of_use ?? null,
+            ATCC_code ?? null,
+            ingredient ?? null,
+            approved_clinical_indication ?? null,
+            access_level ?? null,
+            remarks ?? null,
+            date ?? null
+        ];
+    
+        try {
+            // Check if the medicine with the same ATCC_code exists
+            const [rows] = await db.connection.execute(checkQuery, [ATCC_code]);
+            if (rows.length > 0) {
+                // Medicine with this ATCC_code already exists
+                return 'Medicine with this ATCC_code already exists';
+            }
+    
+            // Medicine does not exist, proceed with insertion
+            await db.connection.execute(insertQuery, insertValues);
+            return 'Medicine added to database successfully';
+        } catch (error) {
+            console.error('Error executing query:', error);
+            throw error;
+        }
+    }
+    
+
+    async updateMedicine(old_ATCC_code, items) {
+        const { 
+            drug_name, 
+            salt, 
+            dosag_form, 
+            strengh, 
+            route_of_use, 
+            ATCC_code, 
+            ingredient, 
+            approved_clinical_indication, 
+            access_level, 
+            remarks, 
+            date 
+        } = items;
+    
+        const checkQuery = "SELECT * FROM medicine WHERE ATCC_code = ?";
+        const updateQuery = `
+            UPDATE medicine SET
+                drug_name = ?,
+                salt = ?,
+                dosag_form = ?,
+                strengh = ?,
+                route_of_use = ?,
+                ATCC_code = ?,
+                ingredient = ?,
+                approved_clinical_indication = ?,
+                access_level = ?,
+                remarks = ?,
+                date = ?
+            WHERE ATCC_code = ?;
+        `;
+    
+        const updateValues = [
+            drug_name ?? null,
+            salt ?? null,
+            dosag_form ?? null,
+            strengh ?? null,
+            route_of_use ?? null,
+            ATCC_code ?? null,
+            ingredient ?? null,
+            approved_clinical_indication ?? null,
+            access_level ?? null,
+            remarks ?? null,
+            date ?? null,
+            old_ATCC_code 
+        ];
+    
+        try {
+            // Check if the medicine exists
+            const [rows] = await db.connection.execute(checkQuery, [old_ATCC_code]);
+            if (rows.length === 0) {
+                // Medicine does not exist
+                return 'Medicine not found in database';
+            }
+    
+            // Medicine exists, proceed with update
+            await db.connection.execute(updateQuery, updateValues);
+            return 'Medicine updated in database successfully';
+        } catch (error) {
+            console.error('Error executing query:', error);
+            throw error;
+        }
+    }
+    
+
+
+    async deleteMedicine(ATCC_code){
+        console.log(ATCC_code);
+
+        const checkQuery = "SELECT * FROM medicine WHERE ATCC_code = ?";
+        const deleteQuery = "DELETE FROM medicine WHERE ATCC_code = ?";
+    
+        try {
+            // Check if the medicine exists
+            const [rows] = await db.connection.execute(checkQuery, [ATCC_code]);
+    
+            if (rows.length === 0) {
+                // Medicine does not exist
+                return 'Medicine not found in database';
+            }
+    
+            // Medicine exists, proceed with deletion
+            await db.connection.execute(deleteQuery, [ATCC_code]);
+            return 'Medicine deleted from database successfully';
+        } catch (error) {
+            console.error('Error executing query:', error);
+            throw error;
         }
     }
 }
