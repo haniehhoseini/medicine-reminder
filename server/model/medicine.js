@@ -11,6 +11,7 @@ async function translatePersian(text) {
         const translate = await loadTranslateModule();
         translate.engine = 'libre';
         const res = await translate.default(text, 'fa');
+        console.log("Trans" , res);
         return res;
     } catch (error) {
         console.log(`Error translatePersian: ${error.message}`);
@@ -37,6 +38,7 @@ function extractDrugInfo(html) {
     });
     return paragraphs;
 }
+
 
 class Medicine {
 
@@ -74,31 +76,35 @@ class Medicine {
         }
     }
 
-    async getMedicineById(id, res) { 
+    async getMedicineById(id) {
         const query = "SELECT * FROM medicine WHERE ATCC_code = ?";
+    
         try {
             const [rows] = await db.connection.execute(query, [id]);
-
+    
             if (rows.length > 0) {
                 const drugName = rows[0].drug_name;
+                console.log(drugName);
                 const translation = await translatePersian(drugName);
+                console.log(translation);
                 const url = `https://fa.wikipedia.org/wiki/${translation}`;
                 const html = await fetchHTML(url);
-
+    
                 if (html) {
                     const drugInfo = extractDrugInfo(html);
                     return drugInfo;
                 } else {
-                    res.status(500).send('Failed to retrieve HTML from Wikipedia');
+                    throw new Error('Failed to retrieve HTML from Wikipedia');
                 }
             } else {
-                res.status(404).send('Drug not found');
+                throw new Error('Drug not found');
             }
         } catch (error) {
-            res.status(500).send('Database error');
             console.error('Database error:', error);
+            throw error;
         }
     }
+    
 
     async addMedicine(items) {
         const { 

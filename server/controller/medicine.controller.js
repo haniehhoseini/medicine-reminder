@@ -10,11 +10,23 @@ exports.searchMedicine = async (req , res ) =>{
     res.json(answer);
 };
 
-exports.getMedicineById = async (req , res ) =>{
-    let answer = await medicine.getMedicineById(req.params.id);
-    console.log(req.params.id);
-    res.json(answer);
+exports.getMedicineById = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const drugInfo = await medicine.getMedicineById(id);
+        res.status(200).json(drugInfo);
+    } catch (error) {
+        if (error.message === 'Drug not found') {
+            res.status(404).send('Drug not found');
+        } else if (error.message === 'Failed to retrieve HTML from Wikipedia') {
+            res.status(500).send('Failed to retrieve HTML from Wikipedia');
+        } else {
+            res.status(500).send('Database error');
+        }
+    }
 };
+
 
 exports.addMedicine = async (req , res) =>{
     try {
