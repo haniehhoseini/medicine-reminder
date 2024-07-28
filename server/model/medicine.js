@@ -1,6 +1,7 @@
 const db = require('../utlis/database');
 const axios = require('axios');
 const cheerio = require('cheerio');
+const puppeteer = require('puppeteer');
 
 async function loadTranslateModule() {
     return await import('translate');
@@ -37,6 +38,32 @@ function extractDrugInfo(html) {
         }
     });
     return paragraphs;
+}
+
+async function fetchHTMLPhotos(url) {
+    try {
+        const { data } = await axios.get(url);
+        return data;
+    } catch (error) {
+        console.error(`Error fetching HTML: ${error.message}`);
+        return null;
+    }
+}
+
+function extractImageUrls(html) {
+    const $ = cheerio.load(html);
+    let firstImageUrl = null;
+
+    
+    $('img').each((i, element) => {
+        const imgUrl = $(element).attr('src');
+        if (imgUrl && imgUrl.startsWith('http')) {
+            firstImageUrl = imgUrl;
+            return false; 
+        }
+    });
+
+    return firstImageUrl;
 }
 
 
@@ -257,6 +284,24 @@ class Medicine {
         } catch (error) {
             console.error('Error executing query:', error);
             throw error;
+        }
+    }
+
+    async getImageUrls(medicineCode) {
+
+        const query = "SELECT * FROM medicine WHERE ATCC_code = ?";
+        const [rows] = await db.connection.execute(query, [medicineCode]);
+        if (rows.length > 0) {
+            const drugName = rows[0].drug_name;
+            console.log(drugName);
+            const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(drugName)}&tbm=isch`;
+            const html = await fetchHTMLPhotos(searchUrl);
+            console.log(html);
+            if (html) {
+                return extractImageUrls(html);
+            } else {
+                return [];
+            }
         }
     }
 }

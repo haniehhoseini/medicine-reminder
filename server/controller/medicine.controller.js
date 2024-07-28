@@ -54,3 +54,15 @@ exports.updateMedicine = async (req , res) =>{
         res.status(500).send('Error updating medicine in database');
     }
 };
+
+exports.getImageUrls = async (req, res) => {
+    const { ATCC_code } = req.params;
+    console.log(ATCC_code);
+
+    try {
+        const imageUrls = await medicine.getImageUrls(ATCC_code);
+        res.status(200).json(imageUrls);
+    } catch (error) {
+        res.status(500).send('Error retrieving image URLs');
+    }
+};
