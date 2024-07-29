@@ -10,7 +10,6 @@ const Roles = require('../shared/role');
 class Auth {
 
     
-
     formatDate(date) {
         // Check if date is a valid string or empty
         if (!date || date.trim() === '') {
@@ -97,6 +96,35 @@ class Auth {
             throw error;  // or handle the error as needed
         }
     }
+
+   
+    async getMe(req, res) {
+        const token = req.headers['authorization'] && req.headers['authorization'].split(' ')[1];
+    
+        if (!token) {
+            return res.status(401).json({ error: 'No token provided' });
+        }
+    
+        try {
+            const decoded = jwt.verify(token, secret);
+            const query = 'SELECT codemeli, firstname, lastname, mobile, address, gender, image_url, birthday, relatives_id, role FROM user WHERE codemeli = ?';
+            const [rows] = await db.connection.execute(query, [decoded.codemeli]);
+    
+            if (rows.length === 0) {
+                return res;
+            }
+    
+            const user = rows[0];
+            return user;
+        } catch (error) {
+            
+            return res;
+        }
+    }
+    
+    
+
+
 }
 
 module.exports = new Auth();

@@ -21,3 +21,12 @@ exports.registerTask = async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 };
+
+exports.getMe = async(req , res) => {
+    try {
+        let answer = await Auth.getMe(req, res);
+        res.json(answer);
+    } catch (error) {
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
