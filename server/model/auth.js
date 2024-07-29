@@ -4,14 +4,7 @@ const jwt = require('jsonwebtoken');
 const secret = require('../config/keys').secretOrKey;
 const Roles = require('../shared/enum');
 
-const findByUserId = (user_id, callback) => {
-    db.connection.execute('SELECT * FROM user WHERE user_id = ?', [user_id], (error, results) => {
-        if (error) return callback(error);
-        // Assuming user_id is unique and there should only be one result
-        callback(null, results[0]);
-    });
-};
-module.exports = { findByUserId };
+
 
 
 class Auth {
