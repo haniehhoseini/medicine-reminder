@@ -1,4 +1,4 @@
-//const db = require('../utlis/database');
+const db = require('../utils/database');
 
 class Company{
 

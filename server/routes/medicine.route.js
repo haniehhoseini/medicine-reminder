@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const  authenticateToken  = require('../middleware/verifying');
 const  authorizeRole  = require('../middleware/role');
-const Roles = require('../shared/enum');
+const Roles = require('../shared/role');
 const { medicine, searchMedicine, getMedicineById, addMedicine, deleteMedicine, updateMedicine, getImageUrls } = require('../controller/medicine.controller');
 
 

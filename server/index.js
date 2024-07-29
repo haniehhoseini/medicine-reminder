@@ -21,7 +21,7 @@ app.use(passport.initialize());
 
 
 app.use("/api/auth", authRoute);
-// app.use("/api/", companyRoute);
+app.use("/api/", companyRoute);
 app.use("/api/", doctorRoute);
 app.use("/api/", medicineRoute);
 app.use('/api/enums', enumsRoles);

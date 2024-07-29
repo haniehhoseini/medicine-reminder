@@ -1,4 +1,4 @@
-const Roles = require('../shared/enum'); 
+const Roles = require('../shared/role'); 
 
 const authorizeRoles = (allowedRoles) => {
     return (req, res, next) => {

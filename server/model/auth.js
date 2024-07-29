@@ -1,8 +1,8 @@
-const db = require('../utlis/database');
+const db = require('../utils/database');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const secret = require('../config/keys').secretOrKey;
-const Roles = require('../shared/enum');
+const Roles = require('../shared/role');
 
 
 
