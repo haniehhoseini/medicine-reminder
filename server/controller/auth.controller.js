@@ -1,6 +1,6 @@
 const Auth = require('../model/auth');
 
-exports.loginTask = async (req, res) => {
+exports.login = async (req, res) => {
     try {
         let answer = await Auth.login(req.body);
         if (answer.token) {
@@ -13,7 +13,7 @@ exports.loginTask = async (req, res) => {
     }
 };
 
-exports.registerTask = async (req, res) => {
+exports.register = async (req, res) => {
     try {
         let answer = await Auth.register(req.body);
         res.json(answer);

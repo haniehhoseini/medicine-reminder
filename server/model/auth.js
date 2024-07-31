@@ -8,7 +8,6 @@ const Roles = require('../shared/role');
 
 
 class Auth {
-
     
     formatDate(date) {
         // Check if date is a valid string or empty
@@ -73,7 +72,7 @@ class Auth {
 
     async login(items) {
         const { codemeli, password } = items;
-        const query = 'SELECT password, role FROM user WHERE codemeli = ?';
+        const query = 'SELECT password, role, firstname ,lastname FROM user WHERE codemeli = ?';
 
         try {
             const [list] = await db.connection.execute(query, [codemeli]);
@@ -82,9 +81,15 @@ class Auth {
                 return { message: 'Invalid credentials' };
             }
 
-            const truePassword = await bcrypt.compare(password, list[0].password);
-            if (truePassword) {
-                const token = jwt.sign({ codemeli, role: list[0].role }, secret, { expiresIn: '1h' });
+            const user = list[0];
+            const isPasswordValid = await bcrypt.compare(password, user.password);
+    
+            if (isPasswordValid) {
+                const token = jwt.sign(
+                    { codemeli, role: user.role, firstname: user.firstname, lastname: user.lastname },
+                    secret,
+                    { expiresIn: '1h' }
+                );
                 console.log('Success');
                 return { token };
             } else {
@@ -93,7 +98,7 @@ class Auth {
             }
         } catch (error) {
             console.error('Error executing query:', error);
-            throw error;  // or handle the error as needed
+            throw error;  
         }
     }
 
