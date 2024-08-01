@@ -13,7 +13,7 @@ router.get('/medicinename',  medicine)
       .post('/searchmedicine',  searchMedicine)
       .get('/medicine/:id',  getMedicineById)
       .post('/addmedicine', authenticateToken, authorizeRole([Roles.ADMIN, Roles.PHARMACIST]), addMedicine)
-      .delete('/deletemedicine/:ATCC_code', authenticateToken, authorizeRole([Roles.ADMIN, Roles.PHARMACIST]), deleteMedicine)
+      .delete('/deletemedicine', authenticateToken, authorizeRole([Roles.ADMIN, Roles.PHARMACIST]), deleteMedicine)
       .put('/updatemedicine/:ATCC_code' , authenticateToken, authorizeRole([Roles.ADMIN, Roles.PHARMACIST]),  updateMedicine)
       .get('/medicinepicture/:ATCC_code',  getImageUrls);
 

@@ -145,7 +145,8 @@ class Medicine {
             approved_clinical_indication, 
             access_level, 
             remarks, 
-            date 
+            date,
+            company_id 
         } = items;
     
         const checkQuery = "SELECT * FROM medicine WHERE ATCC_code = ?";
@@ -161,8 +162,9 @@ class Medicine {
                 approved_clinical_indication,
                 access_level,
                 remarks,
-                date
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                date,
+                compony_id
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
     
         const insertValues = [
@@ -176,7 +178,8 @@ class Medicine {
             approved_clinical_indication ?? null,
             access_level ?? null,
             remarks ?? null,
-            date ?? null
+            date ?? null,
+            company_id ?? null
         ];
     
         try {
@@ -209,10 +212,11 @@ class Medicine {
             approved_clinical_indication, 
             access_level, 
             remarks, 
-            date 
+            date,
+            company_id 
         } = items;
     
-        const checkQuery = "SELECT * FROM medicine WHERE ATCC_code = ?";
+        const checkQuery = "SELECT * FROM medicine WHERE ATCC_code = ? and company_id =?";
         const updateQuery = `
             UPDATE medicine SET
                 drug_name = ?,
@@ -241,15 +245,16 @@ class Medicine {
             access_level ?? null,
             remarks ?? null,
             date ?? null,
-            old_ATCC_code 
+            old_ATCC_code,
+            company_id 
         ];
     
         try {
             // Check if the medicine exists
-            const [rows] = await db.connection.execute(checkQuery, [old_ATCC_code]);
+            const [rows] = await db.connection.execute(checkQuery, [old_ATCC_code , company_id]);
             if (rows.length === 0) {
                 // Medicine does not exist
-                return 'Medicine not found in database';
+                return 'Medicine not found in database with this id company';
             }
     
             // Medicine exists, proceed with update
@@ -263,15 +268,15 @@ class Medicine {
     
 
 
-    async deleteMedicine(ATCC_code){
-        console.log(ATCC_code);
+    async deleteMedicine(items){
+        const {ATCC_code, company_id} = items;
 
-        const checkQuery = "SELECT * FROM medicine WHERE ATCC_code = ?";
+        const checkQuery = "SELECT * FROM medicine WHERE ATCC_code = ? and company_id";
         const deleteQuery = "DELETE FROM medicine WHERE ATCC_code = ?";
     
         try {
             // Check if the medicine exists
-            const [rows] = await db.connection.execute(checkQuery, [ATCC_code]);
+            const [rows] = await db.connection.execute(checkQuery, [ATCC_code , company_id]);
     
             if (rows.length === 0) {
                 // Medicine does not exist

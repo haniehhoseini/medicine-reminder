@@ -39,7 +39,7 @@ exports.addMedicine = async (req , res) =>{
 
 exports.deleteMedicine = async (req , res) =>{
     try {
-        const message = await medicine.deleteMedicine(req.params.ATCC_code);
+        const message = await medicine.deleteMedicine(req.body);
         res.status(200).send(message);
     } catch (error) {
         res.status(500).send('Error deleting medicine from database');
