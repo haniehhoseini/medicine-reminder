@@ -163,7 +163,7 @@ class Medicine {
                 access_level,
                 remarks,
                 date,
-                compony_id
+                company_id
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
     
@@ -309,6 +309,17 @@ class Medicine {
             }
         }
     }
+
+    async getMedicineByCompanyID(companyID) {
+        const query = "SELECT * FROM medicine WHERE company_id =?";
+        try {
+            const [list] = await db.connection.execute(query, [companyID]);
+            return list;
+        } catch (error) {
+            console.error("Error executing query:", error);
+            throw error;
+        }
+    };
 }
 
 module.exports = new Medicine();

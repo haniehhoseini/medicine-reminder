@@ -66,3 +66,14 @@ exports.getImageUrls = async (req, res) => {
         res.status(500).send('Error retrieving image URLs');
     }
 };
+
+exports.getMedicineByCompanyID = async (req, res) => {
+    const { company_id } = req.params;
+
+    try {
+        const medicineList = await medicine.getMedicineByCompanyID(company_id);
+        res.status(200).json(medicineList);
+    } catch (error) {
+        res.status(500).send('Error retrieving medicine list by company ID');
+    }
+};

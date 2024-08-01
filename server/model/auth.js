@@ -10,17 +10,15 @@ const Roles = require('../shared/role');
 class Auth {
     
     formatDate(date) {
-        // Check if date is a valid string or empty
+        
         if (!date || date.trim() === '') {
-            return null; // Set to null or an appropriate default value
+            return null; 
         }
-    
-        // Try to parse and format the date
+           
         const parsedDate = new Date(date);
         return isNaN(parsedDate.getTime()) ? null : parsedDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
     }
 
-    // Utility function to format integers
     formatInteger(value) {
         const parsedValue = parseInt(value, 10);
         return isNaN(parsedValue) || value.trim() === '' ? null : parsedValue;
@@ -36,8 +34,35 @@ class Auth {
 
     async register(items) {
         if (await this.exitRegister(items)) {
-            const { codemeli, password, firstname, lastname, mobile, address, gender, image_url, birthday, relatives_id, role } = items;
-            const query = 'INSERT INTO user (codemeli, password, firstname, lastname, mobile, address, gender, image_url, birthday, relatives_id, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+            const { 
+                    codemeli, 
+                    password, 
+                    firstname, 
+                    lastname, 
+                    mobile, 
+                    address, 
+                    gender, 
+                    image_url, 
+                    birthday, 
+                    relatives_id, 
+                    role,
+                    ensurance 
+                } = items;
+
+            const query = `INSERT INTO user (
+                                codemeli, 
+                                password, 
+                                firstname, 
+                                lastname, 
+                                mobile, 
+                                address, 
+                                gender, 
+                                image_url, 
+                                birthday, 
+                                relatives_id, 
+                                role,
+                                ensurance ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
             const hashpassword = await bcrypt.hash(password, 10);
             const formattedBirthday = this.formatDate(birthday);
             const formattedRelativesId = this.formatInteger(relatives_id);
@@ -53,7 +78,8 @@ class Auth {
                 image_url ?? null,
                 formattedBirthday,
                 formattedRelativesId,
-                role ?? Roles.PATIENT 
+                role ?? Roles.PATIENT ,
+                ensurance 
             ];
 
             try {
@@ -61,7 +87,7 @@ class Auth {
                 return res;
             } catch (error) {
                 console.error('Error executing query:', error);
-                throw error;  // or handle the error as needed
+                throw error;  
             }
         } else {
             console.log('User exists');
@@ -72,7 +98,7 @@ class Auth {
 
     async login(items) {
         const { codemeli, password } = items;
-        const query = 'SELECT password, role, firstname ,lastname FROM user WHERE codemeli = ?';
+        const query = 'SELECT password, role, firstname ,lastname, ensurance FROM user WHERE codemeli = ?';
 
         try {
             const [list] = await db.connection.execute(query, [codemeli]);
@@ -86,7 +112,13 @@ class Auth {
     
             if (isPasswordValid) {
                 const token = jwt.sign(
-                    { codemeli, role: user.role, firstname: user.firstname, lastname: user.lastname },
+                    { 
+                        codemeli, 
+                        role: user.role, 
+                        firstname: user.firstname, 
+                        lastname: user.lastname ,
+                        ensurance: user.ensurance
+                    },
                     secret,
                     { expiresIn: '1h' }
                 );
