@@ -199,7 +199,7 @@ class Medicine {
         }
     }
     
-
+    
     async updateMedicine(old_ATCC_code, items) {
         const { 
             drug_name, 
@@ -216,7 +216,8 @@ class Medicine {
             company_id 
         } = items;
     
-        const checkQuery = "SELECT * FROM medicine WHERE ATCC_code = ? and company_id =?";
+        const checkQuery = "SELECT * FROM medicine WHERE ATCC_code = ? and company_id = ?";
+        const duplicateCheckQuery = "SELECT * FROM medicine WHERE ATCC_code = ?";
         const updateQuery = `
             UPDATE medicine SET
                 drug_name = ?,
@@ -230,7 +231,7 @@ class Medicine {
                 access_level = ?,
                 remarks = ?,
                 date = ?
-            WHERE ATCC_code = ?;
+            WHERE ATCC_code = ? and company_id = ?;
         `;
     
         const updateValues = [
@@ -251,10 +252,18 @@ class Medicine {
     
         try {
             // Check if the medicine exists
-            const [rows] = await db.connection.execute(checkQuery, [old_ATCC_code , company_id]);
+            const [rows] = await db.connection.execute(checkQuery, [old_ATCC_code, company_id]);
             if (rows.length === 0) {
                 // Medicine does not exist
                 return 'Medicine not found in database with this id company';
+            }
+    
+            // Check if the new ATCC_code is already in use by another record
+            if (ATCC_code !== old_ATCC_code) {
+                const [duplicateRows] = await db.connection.execute(duplicateCheckQuery, [ATCC_code]);
+                if (duplicateRows.length > 0) {
+                    return 'New ATCC_code is already in use by another medicine';
+                }
             }
     
             // Medicine exists, proceed with update
@@ -269,14 +278,14 @@ class Medicine {
 
 
     async deleteMedicine(items){
-        const {ATCC_code, company_id} = items;
-
-        const checkQuery = "SELECT * FROM medicine WHERE ATCC_code = ? and company_id";
-        const deleteQuery = "DELETE FROM medicine WHERE ATCC_code = ?";
+        const { ATCC_code, company_id } = items;
+    
+        const checkQuery = "SELECT * FROM medicine WHERE ATCC_code = ? AND company_id = ?";
+        const deleteQuery = "DELETE FROM medicine WHERE ATCC_code = ? AND company_id = ?";
     
         try {
             // Check if the medicine exists
-            const [rows] = await db.connection.execute(checkQuery, [ATCC_code , company_id]);
+            const [rows] = await db.connection.execute(checkQuery, [ATCC_code, company_id]);
     
             if (rows.length === 0) {
                 // Medicine does not exist
@@ -284,13 +293,14 @@ class Medicine {
             }
     
             // Medicine exists, proceed with deletion
-            await db.connection.execute(deleteQuery, [ATCC_code]);
+            await db.connection.execute(deleteQuery, [ATCC_code, company_id]);
             return 'Medicine deleted from database successfully';
         } catch (error) {
             console.error('Error executing query:', error);
             throw error;
         }
     }
+    
 
     async getImageUrls(medicineCode) {
 
