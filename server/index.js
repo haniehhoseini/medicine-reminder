@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const passport = require('passport');
+
 
 
 const authRoute = require("./routes/auth.route");
@@ -16,7 +16,7 @@ const port = 1111;
 app.use(cors());
 app.use(express.json());
 app.use(bodyParser.json());
-app.use(passport.initialize());
+
 
 
 

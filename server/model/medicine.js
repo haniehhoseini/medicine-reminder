@@ -311,7 +311,6 @@ class Medicine {
             console.log(drugName);
             const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(drugName)}&tbm=isch`;
             const html = await fetchHTMLPhotos(searchUrl);
-            console.log(html);
             if (html) {
                 return extractImageUrls(html);
             } else {
