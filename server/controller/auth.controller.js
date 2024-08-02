@@ -16,6 +16,7 @@ exports.login = async (req, res) => {
 exports.register = async (req, res) => {
     try {
         let answer = await Auth.register(req.body);
+        console.log(req.body);
         res.json(answer);
     } catch (error) {
         res.status(500).json({ error: 'Internal server error' });

@@ -1,7 +1,7 @@
 const db = require('../utils/database');
 const axios = require('axios');
 const cheerio = require('cheerio');
-const puppeteer = require('puppeteer');
+
 
 async function loadTranslateModule() {
     return await import('translate');

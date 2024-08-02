@@ -1,6 +1,6 @@
 const Ensurance = Object.freeze({
-    SALAMAT: 'salamat',
-    TAMINEJTEMAI: 'taminejtemai',
+    SALAMAT: 'سلامت',
+    TAMINEJTEMAI: 'تامین اجتماعی',
 });
 
 module.exports = Ensurance;

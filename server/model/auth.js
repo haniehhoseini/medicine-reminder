@@ -67,6 +67,22 @@ class Auth {
             const formattedBirthday = this.formatDate(birthday);
             const formattedRelativesId = this.formatInteger(relatives_id);
 
+            const defaultMaleImageUrl = '../pictures/male.jpg';
+            const defaultFemaleImageUrl = '../pictures/female.jpg';
+    
+            // Set default image based on gender if image_url is empty
+            let finalImageUrl = image_url;
+            if (!finalImageUrl) {
+                if (gender === 'مذکر') {
+                    finalImageUrl = defaultMaleImageUrl;
+                } else if (gender === 'مونث') {
+                    finalImageUrl = defaultFemaleImageUrl;
+                } else {
+                    // Optional: handle cases where gender is not specified or is other
+                    finalImageUrl = '../pictures/male.jpg';
+                }
+            }
+
             const values = [
                 codemeli ?? null,
                 hashpassword,
@@ -75,7 +91,7 @@ class Auth {
                 mobile ?? null,
                 address ?? null,
                 gender ?? null,
-                image_url ?? null,
+                finalImageUrl,
                 formattedBirthday,
                 formattedRelativesId,
                 role ?? Roles.PATIENT ,
