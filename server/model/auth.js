@@ -67,8 +67,8 @@ class Auth {
             const formattedBirthday = this.formatDate(birthday);
             const formattedRelativesId = this.formatInteger(relatives_id);
 
-            const defaultMaleImageUrl = '../pictures/male.jpg';
-            const defaultFemaleImageUrl = '../pictures/female.jpg';
+            const defaultMaleImageUrl = 'https://www.svgrepo.com/show/382101/male-avatar-boy-face-man-user.svg';
+            const defaultFemaleImageUrl = 'https://cdn.icon-icons.com/icons2/2643/PNG/512/female_woman_avatar_people_person_white_tone_icon_159370.png';
     
             // Set default image based on gender if image_url is empty
             let finalImageUrl = image_url;
@@ -79,7 +79,7 @@ class Auth {
                     finalImageUrl = defaultFemaleImageUrl;
                 } else {
                     // Optional: handle cases where gender is not specified or is other
-                    finalImageUrl = '../pictures/male.jpg';
+                    finalImageUrl = 'https://www.svgrepo.com/show/382101/male-avatar-boy-face-man-user.svg';
                 }
             }
 
@@ -114,7 +114,7 @@ class Auth {
 
     async login(items) {
         const { codemeli, password } = items;
-        const query = 'SELECT password, role, firstname ,lastname, ensurance FROM user WHERE codemeli = ?';
+        const query = 'SELECT password, role, firstname ,lastname, ensurance, image_url FROM user WHERE codemeli = ?';
 
         try {
             const [list] = await db.connection.execute(query, [codemeli]);
@@ -133,7 +133,8 @@ class Auth {
                         role: user.role, 
                         firstname: user.firstname, 
                         lastname: user.lastname ,
-                        ensurance: user.ensurance
+                        ensurance: user.ensurance,
+                        image_url: user.image_url
                     },
                     secret,
                     { expiresIn: '1h' }
