@@ -24,8 +24,6 @@ class Auth {
         return isNaN(parsedValue) || value.trim() === '' ? null : parsedValue;
     }
 
-    
-
     async exitRegisterPatient(items) {
         const { codemeli } = items;
         const query = 'SELECT * FROM user WHERE codemeli = ?';
@@ -311,8 +309,7 @@ class Auth {
             return { message: 'User already exists' };
         }
     }    
-
-    
+   
     async login(items) {
         const { codemeli, password, role } = items;
         
@@ -322,7 +319,7 @@ class Auth {
             case 'doctor':
                 tableName = 'doctor';
                 break;
-            case 'company':
+            case 'pharmacist':
                 tableName = 'company';
                 break;
             case 'relatives':
@@ -381,24 +378,47 @@ class Auth {
     
         try {
             const decoded = jwt.verify(token, secret);
-            const query = 'SELECT codemeli, firstname, lastname, mobile, address, gender, image_url, birthday, relatives_id, role FROM user WHERE codemeli = ?';
+            
+            
+            let tableName;
+            switch (decoded.role) {
+                case 'doctor':
+                    tableName = 'doctor';
+                    break;
+                case 'pharmacist':
+                    tableName = 'company';
+                    break;
+                case 'relatives':
+                    tableName = 'relatives';
+                    break;
+                case 'patient':
+                    tableName = 'user';
+                    break;
+                default:
+                    throw new Error('Unknown role');
+            }
+    
+            const query = `SELECT * FROM ${tableName} WHERE codemeli = ?`;
             const [rows] = await db.connection.execute(query, [decoded.codemeli]);
     
             if (rows.length === 0) {
-                return res;
+                return { error: 'User not found' };
             }
     
             const user = rows[0];
             return user;
         } catch (error) {
+            console.error('Error verifying token or executing query:', error);
             
-            return res;
+            if (error.name === 'TokenExpiredError') {
+                return { error: 'Token has expired' };
+            } else if (error.name === 'JsonWebTokenError') {
+                return { error: 'Invalid token' };
+            } else {
+                return { error: 'Internal server error' };
+            }
         }
     }
     
-    
-
-
 }
-
 module.exports = new Auth();
