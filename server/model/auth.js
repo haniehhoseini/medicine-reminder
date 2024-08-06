@@ -96,7 +96,7 @@ class Auth {
                 formattedBirthday,
                 formattedRelativesId,
                 role ?? Roles.PATIENT ,
-                ensurance 
+                ensurance ?? null,
             ];
 
             try {
@@ -162,18 +162,18 @@ class Auth {
             }
 
             const values = [
-                codemeli ?? null,
-                hashpassword,
-                firstname ?? null,
-                lastname ?? null,
-                code ?? null,
+                codemeli ?? null, 
+                hashpassword, 
+                firstname ?? null, 
+                lastname ?? null, 
                 address ?? null,
-                gender ?? null,
-                finalImageUrl,
-                formattedBirthday,
-                expertise,
-                city ?? null,   
-                hospital ?? null,
+                city ?? null,
+                hospital ?? null, 
+                gender ?? null, 
+                finalImageUrl, 
+                formattedBirthday, 
+                expertise ?? null,
+                code ?? null,
                 role ?? Roles.DOCTOR
             ];
 
@@ -202,7 +202,8 @@ class Auth {
             const { 
                 codemeli, 
                 password, 
-                name, 
+                firstname, 
+                lastname,
                 license_code, 
                 mobile,
                 role,
@@ -212,11 +213,12 @@ class Auth {
             const query = `INSERT INTO company (
                 codemeli, 
                 password, 
-                name, 
+                firstname,
+                lastname, 
                 license_code, 
                 mobile,
                 role,
-                image_url ) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+                image_url ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
     
                 const hashpassword = await bcrypt.hash(password, 10);
     
@@ -227,13 +229,14 @@ class Auth {
                 }
     
                 const values = [
-                    codemeli ?? null,
-                    hashpassword,
-                    name ?? null,
-                    license_code ?? null,
+                    codemeli ?? null, 
+                    hashpassword, 
+                    firstname ?? null, 
+                    lastname ?? null,
+                    license_code ?? null, 
                     mobile ?? null,
-                    finalImageUrl,
-                    role ?? Roles.PHARMACIST
+                    role ?? Roles.PHARMACIST,
+                    finalImageUrl
                 ];
     
                 try {
@@ -286,13 +289,13 @@ class Auth {
                 }
     
                 const values = [
-                    codemeli ?? null,
-                    hashpassword,
-                    user_id ?? null,
-                    firstname ?? null,
-                    lastname ?? null,
+                    codemeli ?? null, 
+                    hashpassword, 
+                    firstname ?? null, 
+                    lastname ?? null, 
                     mobile ?? null,
-                    finalImageUrl,
+                    user_id ?? null, 
+                    finalImageUrl, 
                     role ?? Roles.RELATIVES
                 ];
     
@@ -308,10 +311,30 @@ class Auth {
             return { message: 'User already exists' };
         }
     }    
+
     
     async login(items) {
-        const { codemeli, password } = items;
-        const query = 'SELECT password, role, firstname ,lastname, ensurance, image_url FROM user WHERE codemeli = ?';
+        const { codemeli, password, role } = items;
+        
+        console.log(items);
+        let tableName;
+        switch (role) {
+            case 'doctor':
+                tableName = 'doctor';
+                break;
+            case 'company':
+                tableName = 'company';
+                break;
+            case 'relatives':
+                tableName = 'relatives';
+                break;
+            case 'patient':
+                tableName = 'user';
+                break;
+            default:
+                throw new Error('Unknown role');
+        }
+        const query = `SELECT password, role, firstname ,lastname, image_url FROM ${tableName} WHERE codemeli = ?`;
 
         try {
             const [list] = await db.connection.execute(query, [codemeli]);
