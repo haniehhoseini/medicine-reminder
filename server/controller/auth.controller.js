@@ -13,15 +13,42 @@ exports.login = async (req, res) => {
     }
 };
 
-exports.register = async (req, res) => {
+exports.registerPatient = async (req, res) => {
     try {
-        let answer = await Auth.register(req.body);
+        let answer = await Auth.registerPatient(req.body);
         console.log(req.body);
         res.json(answer);
     } catch (error) {
         res.status(500).json({ error: 'Internal server error' });
     }
 };
+
+exports.registerDoctor = async (req, res) => {
+    try {
+        let answer = await Auth.registerDoctor(req.body);
+        res.json(answer);
+    } catch (error) {
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+exports.registerCompany = async (req, res) => {
+    try {
+        let answer = await Auth.registerCompany(req.body);
+        res.json(answer);
+    } catch (error) {
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+exports.registerRelatives = async (req, res) => {
+    try {
+        let answer = await Auth.registerRelatives(req.body);
+        res.json(answer);
+    } catch (error) {
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}
 
 exports.getMe = async(req , res) => {
     try {

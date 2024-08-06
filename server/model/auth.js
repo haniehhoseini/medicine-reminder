@@ -23,17 +23,18 @@ class Auth {
         const parsedValue = parseInt(value, 10);
         return isNaN(parsedValue) || value.trim() === '' ? null : parsedValue;
     }
+
     
 
-    async exitRegister(items) {
+    async exitRegisterPatient(items) {
         const { codemeli } = items;
         const query = 'SELECT * FROM user WHERE codemeli = ?';
         const [rows] = await db.connection.execute(query, [codemeli]);
         return rows.length === 0;
     }
 
-    async register(items) {
-        if (await this.exitRegister(items)) {
+    async registerPatient(items) {
+        if (await this.exitRegisterPatient(items)) {
             const { 
                     codemeli, 
                     password, 
@@ -111,7 +112,203 @@ class Auth {
         }
     }
 
+    async exitRegisterDoctor(items) {
+        const { codemeli } = items;
+        const query = 'SELECT * FROM doctor WHERE codemeli = ?';
+        const [rows] = await db.connection.execute(query, [codemeli]);
+        return rows.length === 0;
+    }
 
+    async registerDoctor(items){
+        if (await this.exitRegisterDoctor(items)) {
+        const { 
+            codemeli, 
+            password, 
+            firstname, 
+            lastname, 
+            address,
+            city,
+            hospital, 
+            gender, 
+            image_url, 
+            birthday, 
+            expertise,
+            code,
+            role
+        } = items;
+
+        const query = `INSERT INTO doctor (
+            codemeli, 
+            password, 
+            firstname, 
+            lastname, 
+            address,
+            city,
+            hospital, 
+            gender, 
+            image_url, 
+            birthday, 
+            expertise,
+            code,
+            role ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+            const hashpassword = await bcrypt.hash(password, 10);
+            const formattedBirthday = this.formatDate(birthday);
+
+    
+            let finalImageUrl = image_url;
+            if (!finalImageUrl) {
+                finalImageUrl = 'https://icones.pro/wp-content/uploads/2021/03/symbole-du-docteur-icone-png-vert.png';
+            }
+
+            const values = [
+                codemeli ?? null,
+                hashpassword,
+                firstname ?? null,
+                lastname ?? null,
+                code ?? null,
+                address ?? null,
+                gender ?? null,
+                finalImageUrl,
+                formattedBirthday,
+                expertise,
+                city ?? null,   
+                hospital ?? null,
+                role ?? Roles.DOCTOR
+            ];
+
+            try {
+                const [res] = await db.connection.execute(query, values);
+                return res;
+            } catch (error) {
+                console.error('Error executing query:', error);
+                throw error;  
+            }
+        } else {
+            console.log('User exists');
+            return { message: 'User already exists' };
+        }
+    }
+
+    async exitRegisterCompany(items){
+        const { codemeli } = items;
+        const query = 'SELECT * FROM company WHERE codemeli = ?';
+        const [rows] = await db.connection.execute(query, [codemeli]);
+        return rows.length === 0;
+    }
+
+    async registerCompany(items){
+        if (await this.exitRegisterCompany(items)) {
+            const { 
+                codemeli, 
+                password, 
+                name, 
+                license_code, 
+                mobile,
+                role,
+                image_url
+            } = items;
+    
+            const query = `INSERT INTO company (
+                codemeli, 
+                password, 
+                name, 
+                license_code, 
+                mobile,
+                role,
+                image_url ) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+    
+                const hashpassword = await bcrypt.hash(password, 10);
+    
+        
+                let finalImageUrl = image_url;
+                if (!finalImageUrl) {
+                    finalImageUrl = 'https://i.pngimg.me/thumb/f/720/m2i8A0K9A0b1G6H7.jpg';
+                }
+    
+                const values = [
+                    codemeli ?? null,
+                    hashpassword,
+                    name ?? null,
+                    license_code ?? null,
+                    mobile ?? null,
+                    finalImageUrl,
+                    role ?? Roles.PHARMACIST
+                ];
+    
+                try {
+                    const [res] = await db.connection.execute(query, values);
+                    return res;
+                } catch (error) {
+                    console.error('Error executing query:', error);
+                    throw error;  
+                }
+            } else {
+                console.log('User exists');
+                return { message: 'User already exists' };
+            }
+    }
+
+    async exitRegisterRelatives(items){
+        const { codemeli } = items;
+        const query = 'SELECT * FROM relatives WHERE codemeli = ?';
+        const [rows] = await db.connection.execute(query, [codemeli]);
+        return rows.length === 0;
+    }
+
+    async registerRelatives(items){
+        if (await this.exitRegisterRelatives(items)) {
+            const { 
+                codemeli, 
+                password, 
+                firstname, 
+                lastname, 
+                mobile,
+                user_id, 
+                image_url, 
+                role
+            } = items;
+            const query = `INSERT INTO relatives (
+                codemeli, 
+                password, 
+                firstname, 
+                lastname, 
+                mobile,
+                user_id, 
+                image_url, 
+                role ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+                const hashpassword = await bcrypt.hash(password, 10);
+    
+        
+                let finalImageUrl = image_url;
+                if (!finalImageUrl) {
+                    finalImageUrl = 'https://cdn-icons-png.flaticon.com/512/11263/11263421.png';
+                }
+    
+                const values = [
+                    codemeli ?? null,
+                    hashpassword,
+                    user_id ?? null,
+                    firstname ?? null,
+                    lastname ?? null,
+                    mobile ?? null,
+                    finalImageUrl,
+                    role ?? Roles.RELATIVES
+                ];
+    
+                try {
+                    const [res] = await db.connection.execute(query, values);
+                    return res;
+                } catch (error) {
+                    console.error('Error executing query:', error);
+                    throw error;  
+                }
+        } else {
+            console.log('User exists');
+            return { message: 'User already exists' };
+        }
+    }    
+    
     async login(items) {
         const { codemeli, password } = items;
         const query = 'SELECT password, role, firstname ,lastname, ensurance, image_url FROM user WHERE codemeli = ?';
