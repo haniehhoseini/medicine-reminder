@@ -283,7 +283,7 @@ class Auth {
         
                 let finalImageUrl = image_url;
                 if (!finalImageUrl) {
-                    finalImageUrl = 'https://cdn-icons-png.flaticon.com/512/11263/11263421.png';
+                    finalImageUrl = 'https://cdn-icons-png.flaticon.com/512/2749/2749769.png';
                 }
     
                 const values = [

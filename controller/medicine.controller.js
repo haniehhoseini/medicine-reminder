@@ -1,7 +1,7 @@
 const medicine = require('../model/medicine');
 
 exports.medicine = async (req , res ) =>{
-    let answer = await medicine.getMedicine(req.body);
+    let answer = await medicine.getMedicine(req.params.page);
     res.json(answer);
 };
 

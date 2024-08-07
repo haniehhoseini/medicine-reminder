@@ -69,8 +69,10 @@ function extractImageUrls(html) {
 
 class Medicine {
 
-    async getMedicine() {
-        const query = "SELECT * FROM medicine";
+    async getMedicine(page) {
+        const offset = (page - 1) * 10;
+        const query = `SELECT * FROM medicine LIMIT 10 OFFSET ${offset}`;
+        
         try {
             const [list] = await db.connection.execute(query);
             return list;

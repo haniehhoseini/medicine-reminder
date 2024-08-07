@@ -14,7 +14,7 @@ const { medicine,
 
 
 
-router.get('/medicinename',  medicine)
+router.get('/medicinename/:page',  medicine)
       .post('/searchmedicine',  searchMedicine)
       .get('/medicine/:id',  getMedicineById)
       .post('/addmedicine', authenticateToken, authorizeRole([Roles.ADMIN, Roles.PHARMACIST]), addMedicine)
