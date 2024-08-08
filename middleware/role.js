@@ -1,7 +1,9 @@
-const Roles = require('../shared/role'); 
-
 const authorizeRoles = (allowedRoles) => {
     return (req, res, next) => {
+        if (!req.user || !req.user.role) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
         const userRole = req.user.role;
 
         if (allowedRoles.includes(userRole)) {
@@ -11,5 +13,4 @@ const authorizeRoles = (allowedRoles) => {
         }
     };
 };
-
 module.exports = authorizeRoles;

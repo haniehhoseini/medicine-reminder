@@ -135,96 +135,41 @@ class Medicine {
     }
     
 
-    async addMedicine(items) {
-        const token = req.headers['authorization'] && req.headers['authorization'].split(' ')[1];
-    
-        if (!token) {
-            return res.status(401).json({ error: 'لطفا ابتدا وارد شوید' });
+
+    async addMedicine(medicineData) {
+        // Destructure the medicine data
+        const { drug_name, salt, dosag_form, strengh, route_of_use, ATCC_code, ingredient, approved_clinical_indication, access_level, remarks, date, company_id } = medicineData;
+
+        // Validate the data
+        if (!drug_name || !salt || !dosag_form || !strengh || !route_of_use || !ATCC_code || !ingredient || !approved_clinical_indication || !access_level || !remarks || !date || !company_id) {
+            throw new Error('لطفا همه ی فیلدهارو پر کنید');
         }
-        const requiredFields = [
-            'drug_name', 
-            'salt', 
-            'dosag_form', 
-            'strengh', 
-            'route_of_use', 
-            'ATCC_code',
-            'ingredient', 
-            'approved_clinical_indication', 
-            'access_level', 
-            'remarks', 
-            'date',
-            'company_id' 
-        ];
-    
-        for (const field of requiredFields) {
-            if (!items[field]) {
-                return { message: `فیلد ${field} الزامی است و نباید خالی باشد.` };
-            }
-        }
-        const { 
-            drug_name, 
-            salt, 
-            dosag_form, 
-            strengh, 
-            route_of_use, 
-            ATCC_code, 
-            ingredient, 
-            approved_clinical_indication, 
-            access_level, 
-            remarks, 
-            date,
-            company_id 
-        } = items;
-    
+
+        // Check if the medicine already exists
         const checkQuery = "SELECT * FROM medicine WHERE ATCC_code = ?";
+        const [rows] = await db.connection.execute(checkQuery, [ATCC_code]);
+        if (rows.length > 0) {
+            throw new Error('این کد قبلا برای داروی دیگری ثبت شده است');
+        }
+
+        // Insert the new medicine
         const insertQuery = `
             INSERT INTO medicine (
-                drug_name,
-                salt,
-                dosag_form,
-                strengh,
-                route_of_use,
-                ATCC_code,
-                ingredient,
-                approved_clinical_indication,
-                access_level,
-                remarks,
-                date,
-                company_id
+                drug_name, salt, dosag_form, strengh, route_of_use, ATCC_code,
+                ingredient, approved_clinical_indication, access_level, remarks, date, company_id
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
-    
         const insertValues = [
-            drug_name ?? null,
-            salt ?? null,
-            dosag_form ?? null,
-            strengh ?? null,
-            route_of_use ?? null,
-            ATCC_code ?? null,
-            ingredient ?? null,
-            approved_clinical_indication ?? null,
-            access_level ?? null,
-            remarks ?? null,
-            date ?? null,
-            company_id ?? null
+            drug_name, salt, dosag_form, strengh, route_of_use, ATCC_code,
+            ingredient, approved_clinical_indication, access_level, remarks, date, company_id
         ];
+
+        await db.connection.execute(insertQuery, insertValues);
+
+        return 'دارو با موفقیت ثبت شد'; // Success message
+    };
+
     
-        try {
-            // Check if the medicine with the same ATCC_code exists
-            const [rows] = await db.connection.execute(checkQuery, [ATCC_code]);
-            if (rows.length > 0) {
-                // Medicine with this ATCC_code already exists
-                return 'این کد قبلا استفاده شده است لطفا کد دیگری را امتحان کنید';
-            }
-    
-            // Medicine does not exist, proceed with insertion
-            await db.connection.execute(insertQuery, insertValues);
-            return 'دارو باموفقیت وارد شد';
-        } catch (error) {
-            console.error('Error executing query:', error);
-            throw error;
-        }
-    }
     
     
     async updateMedicine(old_ATCC_code, items) {

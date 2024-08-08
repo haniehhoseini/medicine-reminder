@@ -238,7 +238,7 @@ class Auth {
             'firstname', 
             'lastname', 
             'mobile', 
-            'license_code'
+            'licenseـcode'
         ];
     
         for (const field of requiredFields) {
@@ -252,7 +252,7 @@ class Auth {
                 password, 
                 firstname, 
                 lastname,
-                license_code, 
+                licenseـcode, 
                 mobile,
                 role,
                 image_url
@@ -263,7 +263,7 @@ class Auth {
                 password, 
                 firstname,
                 lastname, 
-                license_code, 
+                licenseـcode, 
                 mobile,
                 role,
                 image_url ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
@@ -281,7 +281,7 @@ class Auth {
                     hashpassword, 
                     firstname ?? null, 
                     lastname ?? null,
-                    license_code ?? null, 
+                    licenseـcode ?? null, 
                     mobile ?? null,
                     role ?? Roles.PHARMACIST,
                     finalImageUrl
