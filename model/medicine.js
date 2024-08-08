@@ -136,6 +136,26 @@ class Medicine {
     
 
     async addMedicine(items) {
+        const requiredFields = [
+            'drug_name', 
+            'salt', 
+            'dosag_form', 
+            'strengh', 
+            'route_of_use', 
+            'ATCC_code',
+            'ingredient', 
+            'approved_clinical_indication', 
+            'access_level', 
+            'remarks', 
+            'date',
+            'company_id' 
+        ];
+    
+        for (const field of requiredFields) {
+            if (!items[field]) {
+                return { message: `فیلد ${field} الزامی است و نباید خالی باشد.` };
+            }
+        }
         const { 
             drug_name, 
             salt, 

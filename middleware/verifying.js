@@ -7,12 +7,12 @@ const authenticateToken = (req, res, next) => {
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
-        return res.status(401).json({ error: 'No token provided' });
+        return res.status(401).json({ error: 'ابتدا وارد حساب کاربری خود شوید' });
     }
 
     jwt.verify(token, secret, (err, user) => {
         if (err) {
-            return res.status(403).json({ error: 'Invalid token' });
+            return res.status(403).json({ error: 'لطفا یکبار دیگر وارد حساب کاربری خود شوید' });
         }
         req.user = user;
         next();
