@@ -32,6 +32,22 @@ class Auth {
     }
 
     async registerPatient(items) {
+        const requiredFields = [
+            'codemeli', 
+            'password', 
+            'firstname', 
+            'lastname', 
+            'mobile', 
+            'address', 
+            'gender', 
+            'birthday'
+        ];
+    
+        for (const field of requiredFields) {
+            if (!items[field]) {
+                return { message: `فیلد ${field} الزامی است و نباید خالی باشد.` };
+            }
+        }
         if (await this.exitRegisterPatient(items)) {
             const { 
                     codemeli, 
@@ -106,7 +122,7 @@ class Auth {
             }
         } else {
             console.log('User exists');
-            return { message: 'User already exists' };
+            return { message: 'کاربری با این مشخصات قبلا ثبت نام کرده است' };
         }
     }
 
@@ -118,6 +134,26 @@ class Auth {
     }
 
     async registerDoctor(items){
+        const requiredFields = [
+            'codemeli', 
+            'password', 
+            'firstname', 
+            'lastname', 
+            'mobile', 
+            'address', 
+            'gender', 
+            'birthday',
+            'expertise',
+            'code',
+            'city',
+            'hospital',
+        ];
+    
+        for (const field of requiredFields) {
+            if (!items[field]) {
+                return { message: `فیلد ${field} الزامی است و نباید خالی باشد.` };
+            }
+        }
         if (await this.exitRegisterDoctor(items)) {
         const { 
             codemeli, 
@@ -184,7 +220,7 @@ class Auth {
             }
         } else {
             console.log('User exists');
-            return { message: 'User already exists' };
+            return { message: 'کاربری با این مشخصات قبلا ثبت نام کرده است' };
         }
     }
 
@@ -196,6 +232,20 @@ class Auth {
     }
 
     async registerCompany(items){
+        const requiredFields = [
+            'codemeli', 
+            'password', 
+            'firstname', 
+            'lastname', 
+            'mobile', 
+            'license_code'
+        ];
+    
+        for (const field of requiredFields) {
+            if (!items[field]) {
+                return { message: `فیلد ${field} الزامی است و نباید خالی باشد.` };
+            }
+        }
         if (await this.exitRegisterCompany(items)) {
             const { 
                 codemeli, 
@@ -246,7 +296,7 @@ class Auth {
                 }
             } else {
                 console.log('User exists');
-                return { message: 'User already exists' };
+                return { message: 'کاربری با این مشخصات قبلا ثبت نام کرده است' };
             }
     }
 
@@ -258,6 +308,20 @@ class Auth {
     }
 
     async registerRelatives(items){
+        const requiredFields = [
+            'codemeli', 
+            'password', 
+            'firstname', 
+            'lastname', 
+            'mobile', 
+            'user_id'
+        ];
+    
+        for (const field of requiredFields) {
+            if (!items[field]) {
+                return { message: `فیلد ${field} الزامی است و نباید خالی باشد.` };
+            }
+        }
         if (await this.exitRegisterRelatives(items)) {
             const { 
                 codemeli, 
@@ -306,7 +370,7 @@ class Auth {
                 }
         } else {
             console.log('User exists');
-            return { message: 'User already exists' };
+            return { message: 'کاربری با این مشخصات قبلا ثبت نام کرده است' };
         }
     }    
    
@@ -336,8 +400,7 @@ class Auth {
         try {
             const [list] = await db.connection.execute(query, [codemeli]);
             if (list.length === 0) {
-                console.log('Invalid credentials');
-                return { message: 'Invalid credentials' };
+                return { message: 'کدملی یا رمز شما یا حالت اشتباه میباشد' };
             }
 
             const user = list[0];
@@ -357,10 +420,9 @@ class Auth {
                     { expiresIn: '1h' }
                 );
                 console.log('Success');
-                return { token };
+                return { token, message:'با موفقیت وارد شدید' };
             } else {
-                console.log('Invalid credentials');
-                return { message: 'Invalid credentials' };
+                return { message: 'کدملی یا رمز یا حالت اشتباه میباشد' };
             }
         } catch (error) {
             console.error('Error executing query:', error);
@@ -373,7 +435,7 @@ class Auth {
         const token = req.headers['authorization'] && req.headers['authorization'].split(' ')[1];
     
         if (!token) {
-            return res.status(401).json({ error: 'No token provided' });
+            return res.status(401).json({ error: 'لطفا ابتدا وارد شوید' });
         }
     
         try {
@@ -402,7 +464,7 @@ class Auth {
             const [rows] = await db.connection.execute(query, [decoded.codemeli]);
     
             if (rows.length === 0) {
-                return { error: 'User not found' };
+                return { error: 'همچنین کاربری یافت نشد' };
             }
     
             const user = rows[0];
@@ -411,11 +473,11 @@ class Auth {
             console.error('Error verifying token or executing query:', error);
             
             if (error.name === 'TokenExpiredError') {
-                return { error: 'Token has expired' };
+                return { error: 'لطفا یکبار دیگر وارد شوید' };
             } else if (error.name === 'JsonWebTokenError') {
-                return { error: 'Invalid token' };
+                return { error: 'احراز هویت نامعتبر است' };
             } else {
-                return { error: 'Internal server error' };
+                return { error: 'اختلال در سرور' };
             }
         }
     }

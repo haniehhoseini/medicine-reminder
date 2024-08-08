@@ -123,10 +123,10 @@ class Medicine {
                     const drugInfo = extractDrugInfo(html);
                     return drugInfo;
                 } else {
-                    throw new Error('Failed to retrieve HTML from Wikipedia');
+                    throw new Error('اختلال در گرفتن اطلاعات این دارو لطفا بعدا جستجو کنید');
                 }
             } else {
-                throw new Error('Drug not found');
+                throw new Error('اطلاعاتی برای این دارو یافت نشد');
             }
         } catch (error) {
             console.error('Database error:', error);
@@ -189,12 +189,12 @@ class Medicine {
             const [rows] = await db.connection.execute(checkQuery, [ATCC_code]);
             if (rows.length > 0) {
                 // Medicine with this ATCC_code already exists
-                return 'Medicine with this ATCC_code already exists';
+                return 'این کد قبلا استفاده شده است لطفا کد دیگری را امتحان کنید';
             }
     
             // Medicine does not exist, proceed with insertion
             await db.connection.execute(insertQuery, insertValues);
-            return 'Medicine added to database successfully';
+            return 'دارو باموفقیت وارد شد';
         } catch (error) {
             console.error('Error executing query:', error);
             throw error;
@@ -257,20 +257,20 @@ class Medicine {
             const [rows] = await db.connection.execute(checkQuery, [old_ATCC_code, company_id]);
             if (rows.length === 0) {
                 // Medicine does not exist
-                return 'Medicine not found in database with this id company';
+                return 'همچین دارویی برای این شرکت ثبت نشده است';
             }
     
             // Check if the new ATCC_code is already in use by another record
             if (ATCC_code !== old_ATCC_code) {
                 const [duplicateRows] = await db.connection.execute(duplicateCheckQuery, [ATCC_code]);
                 if (duplicateRows.length > 0) {
-                    return 'New ATCC_code is already in use by another medicine';
+                    return 'لطفا کد دیگری انتخاب کنید';
                 }
             }
     
             // Medicine exists, proceed with update
             await db.connection.execute(updateQuery, updateValues);
-            return 'Medicine updated in database successfully';
+            return 'دارو با موفیت تغییر یافت';
         } catch (error) {
             console.error('Error executing query:', error);
             throw error;
@@ -291,12 +291,12 @@ class Medicine {
     
             if (rows.length === 0) {
                 // Medicine does not exist
-                return 'Medicine not found in database';
+                return 'همچین دارویی در دیتابیس وجود ندارد';
             }
     
             // Medicine exists, proceed with deletion
             await db.connection.execute(deleteQuery, [ATCC_code, company_id]);
-            return 'Medicine deleted from database successfully';
+            return 'دارو با موفقیت از لیست داروها پاک شد';
         } catch (error) {
             console.error('Error executing query:', error);
             throw error;
