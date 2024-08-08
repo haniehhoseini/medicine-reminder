@@ -136,6 +136,11 @@ class Medicine {
     
 
     async addMedicine(items) {
+        const token = req.headers['authorization'] && req.headers['authorization'].split(' ')[1];
+    
+        if (!token) {
+            return res.status(401).json({ error: 'لطفا ابتدا وارد شوید' });
+        }
         const requiredFields = [
             'drug_name', 
             'salt', 
@@ -223,6 +228,11 @@ class Medicine {
     
     
     async updateMedicine(old_ATCC_code, items) {
+        const token = req.headers['authorization'] && req.headers['authorization'].split(' ')[1];
+    
+        if (!token) {
+            return res.status(401).json({ error: 'لطفا ابتدا وارد شوید' });
+        }
         const { 
             drug_name, 
             salt, 
@@ -300,6 +310,11 @@ class Medicine {
 
 
     async deleteMedicine(items){
+        const token = req.headers['authorization'] && req.headers['authorization'].split(' ')[1];
+    
+        if (!token) {
+            return res.status(401).json({ error: 'لطفا ابتدا وارد شوید' });
+        }
         const { ATCC_code, company_id } = items;
     
         const checkQuery = "SELECT * FROM medicine WHERE ATCC_code = ? AND company_id = ?";
