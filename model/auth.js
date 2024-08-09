@@ -31,7 +31,8 @@ class Auth {
         return rows.length === 0;
     }
 
-    async registerPatient(items) {
+    async registerPatient(req, res) {
+        const items = req.body; // فرض بر این است که داده‌ها از body درخواست گرفته می‌شود
         const requiredFields = [
             'codemeli', 
             'password', 
@@ -43,27 +44,30 @@ class Auth {
             'birthday'
         ];
     
+        // بررسی وجود فیلدهای الزامی
         for (const field of requiredFields) {
             if (!items[field]) {
-                return { message: `فیلد ${field} الزامی است و نباید خالی باشد.` };
+                return res.status(400).json({ message: `فیلد ${field} الزامی است و نباید خالی باشد.` });
             }
         }
+    
+        // بررسی وجود کاربر با مشخصات داده شده
         if (await this.exitRegisterPatient(items)) {
             const { 
-                    codemeli, 
-                    password, 
-                    firstname, 
-                    lastname, 
-                    mobile, 
-                    address, 
-                    gender, 
-                    image_url, 
-                    birthday, 
-                    relatives_id, 
-                    role,
-                    ensurance 
-                } = items;
-
+                codemeli, 
+                password, 
+                firstname, 
+                lastname, 
+                mobile, 
+                address, 
+                gender, 
+                image_url, 
+                birthday, 
+                relatives_id, 
+                role,
+                ensurance 
+            } = items;
+    
             const query = `INSERT INTO user (
                                 codemeli, 
                                 password, 
@@ -77,15 +81,15 @@ class Auth {
                                 relatives_id, 
                                 role,
                                 ensurance ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-
+    
             const hashpassword = await bcrypt.hash(password, 10);
             const formattedBirthday = this.formatDate(birthday);
             const formattedRelativesId = this.formatInteger(relatives_id);
-
+    
             const defaultMaleImageUrl = 'https://www.svgrepo.com/show/382101/male-avatar-boy-face-man-user.svg';
             const defaultFemaleImageUrl = 'https://cdn.icon-icons.com/icons2/2643/PNG/512/female_woman_avatar_people_person_white_tone_icon_159370.png';
     
-            // Set default image based on gender if image_url is empty
+            // تنظیم تصویر پیش‌فرض بر اساس جنسیت در صورتی که image_url خالی باشد
             let finalImageUrl = image_url;
             if (!finalImageUrl) {
                 if (gender === 'مذکر') {
@@ -93,11 +97,11 @@ class Auth {
                 } else if (gender === 'مونث') {
                     finalImageUrl = defaultFemaleImageUrl;
                 } else {
-                    // Optional: handle cases where gender is not specified or is other
-                    finalImageUrl = 'https://www.svgrepo.com/show/382101/male-avatar-boy-face-man-user.svg';
+                    // اختیاری: مدیریت حالت‌هایی که جنسیت مشخص نشده یا دیگر است
+                    finalImageUrl = defaultMaleImageUrl;
                 }
             }
-
+    
             const values = [
                 codemeli ?? null,
                 hashpassword,
@@ -109,22 +113,21 @@ class Auth {
                 finalImageUrl,
                 formattedBirthday,
                 formattedRelativesId,
-                role ?? Roles.PATIENT ,
+                role ?? Roles.PATIENT,
                 ensurance ?? null,
             ];
-
+    
             try {
-                const [res] = await db.connection.execute(query, values);
-                return res;
-            } catch (error) {
-                console.error('Error executing query:', error);
-                throw error;  
+                const [result] = await db.connection.execute(query, values);
+                return res.status(201).json({ message: 'کاربر با موفقیت ثبت شد', result });
+            } catch (message) {
+                return res.status(500).json({ message: 'خطای داخلی سرور. لطفاً دوباره تلاش کنید.' });
             }
         } else {
-            console.log('User exists');
-            return { message: 'کاربری با این مشخصات قبلا ثبت نام کرده است' };
+            return res.status(400).json({ message: 'کاربری با این مشخصات قبلا ثبت نام کرده است' });
         }
     }
+    
 
     async exitRegisterDoctor(items) {
         const { codemeli } = items;
@@ -214,12 +217,10 @@ class Auth {
             try {
                 const [res] = await db.connection.execute(query, values);
                 return res;
-            } catch (error) {
-                console.error('Error executing query:', error);
-                throw error;  
+            } catch (message) {
+                throw message;  
             }
         } else {
-            console.log('User exists');
             return { message: 'کاربری با این مشخصات قبلا ثبت نام کرده است' };
         }
     }
@@ -290,12 +291,10 @@ class Auth {
                 try {
                     const [res] = await db.connection.execute(query, values);
                     return res;
-                } catch (error) {
-                    console.error('Error executing query:', error);
-                    throw error;  
+                } catch (message) {
+                    throw message;  
                 }
             } else {
-                console.log('User exists');
                 return { message: 'کاربری با این مشخصات قبلا ثبت نام کرده است' };
             }
     }
@@ -364,12 +363,10 @@ class Auth {
                 try {
                     const [res] = await db.connection.execute(query, values);
                     return res;
-                } catch (error) {
-                    console.error('Error executing query:', error);
-                    throw error;  
+                } catch (message) {
+                    throw message;  
                 }
         } else {
-            console.log('User exists');
             return { message: 'کاربری با این مشخصات قبلا ثبت نام کرده است' };
         }
     }    
@@ -419,14 +416,12 @@ class Auth {
                     secret,
                     { expiresIn: '1h' }
                 );
-                console.log('Success');
                 return { token, message:'با موفقیت وارد شدید' };
             } else {
                 return { message: 'کدملی یا رمز یا حالت اشتباه میباشد' };
             }
-        } catch (error) {
-            console.error('Error executing query:', error);
-            throw error;  
+        } catch (message) {
+            throw message;  
         }
     }
 
@@ -469,15 +464,14 @@ class Auth {
     
             const user = rows[0];
             return user;
-        } catch (error) {
-            console.error('Error verifying token or executing query:', error);
+        } catch (message) {
             
-            if (error.name === 'TokenExpiredError') {
-                return { error: 'لطفا یکبار دیگر وارد شوید' };
-            } else if (error.name === 'JsonWebTokenError') {
-                return { error: 'احراز هویت نامعتبر است' };
+            if (message.name === 'TokenExpiredError') {
+                return { message: 'لطفا یکبار دیگر وارد شوید' };
+            } else if (message.name === 'JsonWebTokenError') {
+                return { message: 'احراز هویت نامعتبر است' };
             } else {
-                return { error: 'اختلال در سرور' };
+                return { message: 'اختلال در سرور' };
             }
         }
     }

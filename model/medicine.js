@@ -14,8 +14,8 @@ async function translatePersian(text) {
         const res = await translate.default(text, 'fa');
         console.log("Trans" , res);
         return res;
-    } catch (error) {
-        console.log(`Error translatePersian: ${error.message}`);
+    } catch (message) {
+        return message;
     }
 }
 
@@ -23,8 +23,8 @@ async function fetchHTML(url) {
     try {
         const { data } = await axios.get(url);
         return data;
-    } catch (error) {
-        console.error(`Error fetching HTML: ${error.message}`);
+    } catch (message) {
+        return message;
     }
 }
 
@@ -44,9 +44,8 @@ async function fetchHTMLPhotos(url) {
     try {
         const { data } = await axios.get(url);
         return data;
-    } catch (error) {
-        console.error(`Error fetching HTML: ${error.message}`);
-        return null;
+    } catch (message) {
+        return message;
     }
 }
 
@@ -76,9 +75,8 @@ class Medicine {
         try {
             const [list] = await db.connection.execute(query);
             return list;
-        } catch (error) {
-            console.error("Error executing query:", error);
-            throw error;
+        } catch (message) {
+            throw message;
         }
     }
 
@@ -99,9 +97,8 @@ class Medicine {
         try {
             const [rows] = await db.connection.execute(query, queryParams);
             return rows;
-        } catch (error) {
-            console.error("Error executing query:", error);
-            throw error;
+        } catch (message) {
+            throw message;
         }
     }
 
@@ -128,9 +125,8 @@ class Medicine {
             } else {
                 throw new Error('اطلاعاتی برای این دارو یافت نشد');
             }
-        } catch (error) {
-            console.error('Database error:', error);
-            throw error;
+        } catch (message) {
+            throw message;
         }
     }
     
@@ -246,9 +242,8 @@ class Medicine {
             // Medicine exists, proceed with update
             await db.connection.execute(updateQuery, updateValues);
             return 'دارو با موفیت تغییر یافت';
-        } catch (error) {
-            console.error('Error executing query:', error);
-            throw error;
+        } catch (message) {
+            throw message;
         }
     }
     
@@ -277,9 +272,8 @@ class Medicine {
             // Medicine exists, proceed with deletion
             await db.connection.execute(deleteQuery, [ATCC_code, company_id]);
             return 'دارو با موفقیت از لیست داروها پاک شد';
-        } catch (error) {
-            console.error('Error executing query:', error);
-            throw error;
+        } catch (message) {
+            throw message;
         }
     }
     
@@ -306,9 +300,8 @@ class Medicine {
         try {
             const [list] = await db.connection.execute(query, [companyID]);
             return list;
-        } catch (error) {
-            console.error("Error executing query:", error);
-            throw error;
+        } catch (message) {
+            throw message;
         }
     };
 }

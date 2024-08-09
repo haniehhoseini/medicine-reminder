@@ -14,9 +14,8 @@ class Doctor {
         try {
             const [rows] = await db.connection.execute(query);
             return rows;
-        } catch (error) {
-            console.error("Error executing query:", error);
-            throw error;
+        } catch (message) {
+            throw message;
         }
     }
 
@@ -39,9 +38,8 @@ class Doctor {
         try {
             const [rows] = await db.connection.execute(query, queryParams);
             return rows;
-        } catch (error) {
-            console.error("Error executing query:", error);
-            throw error;
+        } catch (message) {
+            throw message;
         }
     }
     
@@ -50,9 +48,8 @@ class Doctor {
         try {
             const [rows] = await db.connection.execute(query, [id]);
             return rows[0];
-        } catch (error) {
-            console.error("Error executing query:", error);
-            throw error;
+        } catch (message) {
+            throw message;
         }
     }
 }
