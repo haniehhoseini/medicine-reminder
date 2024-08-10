@@ -235,31 +235,32 @@ class Auth {
 
     async registerCompany(req, res) {
         const items = req.body;
+        console.log(items);
+        
         const requiredFields = [
-            'codemeli',
-            'password',
+            'license_code', 
             'firstname',
             'lastname',
             'mobile',
-            'licenseـcode'
+            'codemeli',
+            'password',
+            'role',
         ];
     
-        // چک کردن فیلدهای الزامی
         for (const field of requiredFields) {
-            if (!items[field]) {
+            if (!items[field] || items[field].trim() === '') {
                 return res.status(400).json({ message: `فیلد ${field} الزامی است و نباید خالی باشد.` });
             }
         }
     
         try {
-            // بررسی اینکه آیا شرکت قبلاً ثبت‌نام کرده است
             if (await this.exitRegisterCompany(items)) {
                 const {
                     codemeli,
                     password,
                     firstname,
                     lastname,
-                    licenseـcode,
+                    license_code,
                     mobile,
                     role,
                     image_url
@@ -270,7 +271,7 @@ class Auth {
                     password,
                     firstname,
                     lastname,
-                    licenseـcode,
+                    license_code, 
                     mobile,
                     role,
                     image_url
@@ -288,23 +289,23 @@ class Auth {
                     hashpassword,
                     firstname ?? null,
                     lastname ?? null,
-                    licenseـcode ?? null,
+                    license_code ?? null, 
                     mobile ?? null,
                     role ?? Roles.PHARMACIST,
                     finalImageUrl
                 ];
     
-                // اجرای کوئری و ذخیره نتیجه
                 const [result] = await db.connection.execute(query, values);
                 return res.status(201).json({ message: 'کاربر با موفقیت ثبت شد', result });
             } else {
                 return res.status(409).json({ message: 'کاربری با این مشخصات قبلاً ثبت نام کرده است' });
             }
-        } catch (message) {
+        } catch (error) {
             console.error('Database error:', error);
-            return res.status(500).json({ message: 'خطا در ثبت کاربر', message });
+            return res.status(500).json({ message: 'خطا در ثبت کاربر', error: error.message });
         }
     }
+    
     
 
     async exitRegisterRelatives(items){
