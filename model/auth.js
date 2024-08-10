@@ -31,8 +31,8 @@ class Auth {
         return rows.length === 0;
     }
 
-    async registerPatient(req, res) {
-        const items = req.body; // فرض بر این است که داده‌ها از body درخواست گرفته می‌شود
+    async registerPatient(items) {
+       
         const requiredFields = [
             'codemeli', 
             'password', 
@@ -47,7 +47,7 @@ class Auth {
         // بررسی وجود فیلدهای الزامی
         for (const field of requiredFields) {
             if (!items[field]) {
-                return res.status(400).json({ message: `فیلد ${field} الزامی است و نباید خالی باشد.` });
+                return ({ message: `فیلد ${field} الزامی است و نباید خالی باشد.` });
             }
         }
     
@@ -119,12 +119,12 @@ class Auth {
     
             try {
                 const [result] = await db.connection.execute(query, values);
-                return res.status(201).json({ message: 'کاربر با موفقیت ثبت شد', result });
+                return ({ message: 'کاربر با موفقیت ثبت شد', result });
             } catch (message) {
-                return res.status(500).json({ message: 'خطای داخلی سرور. لطفاً دوباره تلاش کنید.' });
+                return ({ message: 'خطای داخلی سرور. لطفاً دوباره تلاش کنید.' });
             }
         } else {
-            return res.status(400).json({ message: 'کاربری با این مشخصات قبلا ثبت نام کرده است' });
+            return ({ message: 'کاربری با این مشخصات قبلا ثبت نام کرده است' });
         }
     }
     

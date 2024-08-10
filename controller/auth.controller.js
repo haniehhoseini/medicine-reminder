@@ -15,8 +15,9 @@ exports.login = async (req, res) => {
 
 exports.registerPatient = async (req, res) => {
     try {
-        let answer = await Auth.registerPatient(req.body);
         console.log(req.body);
+        let answer = await Auth.registerPatient(req.body);
+        
         res.json(answer);
     } catch (message) {
         res.status(500).json({ message: 'خطای داخلی سرور لطفا بعدا تلاش کنید' });
