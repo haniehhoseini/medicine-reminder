@@ -30,8 +30,7 @@ exports.getMedicineById = async (req, res) => {
 
 exports.addMedicine = async (req , res) =>{
     try {
-        const message = await medicine.addMedicine(req.body);
-        console.log(req.body);
+        const message = await medicine.addMedicine(req , res);
         res.status(200).send(message);
     } catch (message) {
         res.status(500).send('دارو ثبت نشد');
@@ -40,7 +39,7 @@ exports.addMedicine = async (req , res) =>{
 
 exports.deleteMedicine = async (req , res) =>{
     try {
-        const message = await medicine.deleteMedicine(req.body);
+        const message = await medicine.deleteMedicine(req , res);
         res.status(200).send(message);
     } catch (message) {
         res.status(500).send('دارو پاک نشد');

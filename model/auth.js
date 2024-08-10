@@ -31,8 +31,8 @@ class Auth {
         return rows.length === 0;
     }
 
-    async registerPatient(items) {
-       
+    async registerPatient(req, res) {
+        const items = req.body; // فرض بر این است که داده‌ها از body درخواست گرفته می‌شود
         const requiredFields = [
             'codemeli', 
             'password', 
@@ -47,7 +47,7 @@ class Auth {
         // بررسی وجود فیلدهای الزامی
         for (const field of requiredFields) {
             if (!items[field]) {
-                return ({ message: `فیلد ${field} الزامی است و نباید خالی باشد.` });
+                return res.status(400).json({ message: `فیلد ${field} الزامی است و نباید خالی باشد.` });
             }
         }
     
@@ -119,12 +119,12 @@ class Auth {
     
             try {
                 const [result] = await db.connection.execute(query, values);
-                return ({ message: 'کاربر با موفقیت ثبت شد', result });
+                return res.status(201).json({ message: 'کاربر با موفقیت ثبت شد', result });
             } catch (message) {
-                return ({ message: 'خطای داخلی سرور. لطفاً دوباره تلاش کنید.' });
+                return res.status(500).json({ message: 'خطای داخلی سرور. لطفاً دوباره تلاش کنید.' });
             }
         } else {
-            return ({ message: 'کاربری با این مشخصات قبلا ثبت نام کرده است' });
+            return res.status(400).json({ message: 'کاربری با این مشخصات قبلا ثبت نام کرده است' });
         }
     }
     
@@ -136,7 +136,8 @@ class Auth {
         return rows.length === 0;
     }
 
-    async registerDoctor(items){
+    async registerDoctor(req, res) {
+        const items = req.body;
         const requiredFields = [
             'codemeli', 
             'password', 
@@ -154,7 +155,7 @@ class Auth {
     
         for (const field of requiredFields) {
             if (!items[field]) {
-                return { message: `فیلد ${field} الزامی است و نباید خالی باشد.` };
+                return res.status(401).json({ message: `فیلد ${field} الزامی است و نباید خالی باشد.` });
             }
         }
         if (await this.exitRegisterDoctor(items)) {
@@ -216,12 +217,12 @@ class Auth {
 
             try {
                 const [res] = await db.connection.execute(query, values);
-                return res;
+                return res.status(201).json({ message: 'کاربر با موفقیت ثبت شد', res });
             } catch (message) {
                 throw message;  
             }
         } else {
-            return { message: 'کاربری با این مشخصات قبلا ثبت نام کرده است' };
+            return res.status(401).json({ message: 'کاربری با این مشخصات قبلا ثبت نام کرده است' });
         }
     }
 
@@ -232,7 +233,8 @@ class Auth {
         return rows.length === 0;
     }
 
-    async registerCompany(items){
+    async registerCompany(req , res){
+        const items = req.body;
         const requiredFields = [
             'codemeli', 
             'password', 
@@ -244,7 +246,7 @@ class Auth {
     
         for (const field of requiredFields) {
             if (!items[field]) {
-                return { message: `فیلد ${field} الزامی است و نباید خالی باشد.` };
+                return res.status(401).json({ message: `فیلد ${field} الزامی است و نباید خالی باشد.` });
             }
         }
         if (await this.exitRegisterCompany(items)) {
@@ -290,12 +292,12 @@ class Auth {
     
                 try {
                     const [res] = await db.connection.execute(query, values);
-                    return res;
+                    return res.status(201).json({ message: 'کاربر با موفقیت ثبت شد', res });
                 } catch (message) {
                     throw message;  
                 }
             } else {
-                return { message: 'کاربری با این مشخصات قبلا ثبت نام کرده است' };
+                return res.status(401).json({ message: 'کاربری با این مشخصات قبلا ثبت نام کرده است' });
             }
     }
 
@@ -306,7 +308,8 @@ class Auth {
         return rows.length === 0;
     }
 
-    async registerRelatives(items){
+    async registerRelatives(req, res){
+        const items = req.body;
         const requiredFields = [
             'codemeli', 
             'password', 
@@ -318,7 +321,7 @@ class Auth {
     
         for (const field of requiredFields) {
             if (!items[field]) {
-                return { message: `فیلد ${field} الزامی است و نباید خالی باشد.` };
+                return res.status(401).json({ message: `فیلد ${field} الزامی است و نباید خالی باشد.` });
             }
         }
         if (await this.exitRegisterRelatives(items)) {
@@ -362,16 +365,18 @@ class Auth {
     
                 try {
                     const [res] = await db.connection.execute(query, values);
-                    return res;
+                    return res.status(201).json({ message: 'کاربر با موفقیت ثبت شد', res });
+
                 } catch (message) {
                     throw message;  
                 }
         } else {
-            return { message: 'کاربری با این مشخصات قبلا ثبت نام کرده است' };
+            return res.status(401).json({ message: 'کاربری با این مشخصات قبلا ثبت نام کرده است' });
         }
     }    
    
-    async login(items) {
+    async login(req, res) {
+        const items = req.body
         const { codemeli, password, role } = items;
         
         console.log(items);
@@ -397,7 +402,7 @@ class Auth {
         try {
             const [list] = await db.connection.execute(query, [codemeli]);
             if (list.length === 0) {
-                return { message: 'کدملی یا رمز شما یا حالت اشتباه میباشد' };
+                return res.status(401).json({ message: 'کدملی یا رمز شما یا حالت اشتباه میباشد' });
             }
 
             const user = list[0];
@@ -416,9 +421,9 @@ class Auth {
                     secret,
                     { expiresIn: '1h' }
                 );
-                return { token, message:'با موفقیت وارد شدید' };
+                return res.status(201).json({ token, message:'با موفقیت وارد شدید' });
             } else {
-                return { message: 'کدملی یا رمز یا حالت اشتباه میباشد' };
+                return res.status(401).json({ message: 'کدملی یا رمز یا حالت اشتباه میباشد' });
             }
         } catch (message) {
             throw message;  
@@ -459,19 +464,19 @@ class Auth {
             const [rows] = await db.connection.execute(query, [decoded.codemeli]);
     
             if (rows.length === 0) {
-                return { error: 'همچنین کاربری یافت نشد' };
+                return res.status(401).json({ error: 'همچنین کاربری یافت نشد' });
             }
     
             const user = rows[0];
-            return user;
+            return res.status(201).json({ message: 'کاربر با موفقیت ثبت شد', user });
         } catch (message) {
             
             if (message.name === 'TokenExpiredError') {
-                return { message: 'لطفا یکبار دیگر وارد شوید' };
+                return res.status(401).json({ message: 'لطفا یکبار دیگر وارد شوید' });
             } else if (message.name === 'JsonWebTokenError') {
-                return { message: 'احراز هویت نامعتبر است' };
+                return res.status(401).json({ message: 'احراز هویت نامعتبر است' });
             } else {
-                return { message: 'اختلال در سرور' };
+                return res.status(401).json({ message: 'اختلال در سرور' });
             }
         }
     }

@@ -2,7 +2,7 @@ const Auth = require('../model/auth');
 
 exports.login = async (req, res) => {
     try {
-        let answer = await Auth.login(req.body);
+        let answer = await Auth.login(req, res);
         if (answer.token) {
             res.json(answer);
         } else {
@@ -15,9 +15,8 @@ exports.login = async (req, res) => {
 
 exports.registerPatient = async (req, res) => {
     try {
-        console.log(req.body);
-        let answer = await Auth.registerPatient(req.body);
         
+        let answer = await Auth.registerPatient(req, res);
         res.json(answer);
     } catch (message) {
         res.status(500).json({ message: 'خطای داخلی سرور لطفا بعدا تلاش کنید' });
@@ -26,7 +25,7 @@ exports.registerPatient = async (req, res) => {
 
 exports.registerDoctor = async (req, res) => {
     try {
-        let answer = await Auth.registerDoctor(req.body);
+        let answer = await Auth.registerDoctor(req, res);
         res.json(answer);
     } catch (message) {
         res.status(500).json({ message: 'Internal server error' });
@@ -35,7 +34,7 @@ exports.registerDoctor = async (req, res) => {
 
 exports.registerCompany = async (req, res) => {
     try {
-        let answer = await Auth.registerCompany(req.body);
+        let answer = await Auth.registerCompany(req, res);
         res.json(answer);
     } catch (message) {
         res.status(500).json({ message: 'Internal server error' });
@@ -44,7 +43,7 @@ exports.registerCompany = async (req, res) => {
 
 exports.registerRelatives = async (req, res) => {
     try {
-        let answer = await Auth.registerRelatives(req.body);
+        let answer = await Auth.registerRelatives(req, res);
         res.json(answer);
     } catch (message) {
         res.status(500).json({ message: 'Internal server error' });

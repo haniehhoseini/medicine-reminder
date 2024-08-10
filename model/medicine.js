@@ -120,10 +120,10 @@ class Medicine {
                     const drugInfo = extractDrugInfo(html);
                     return drugInfo;
                 } else {
-                    throw new Error('اختلال در گرفتن اطلاعات این دارو لطفا بعدا جستجو کنید');
+                    throw ('اختلال در گرفتن اطلاعات این دارو لطفا بعدا جستجو کنید');
                 }
             } else {
-                throw new Error('اطلاعاتی برای این دارو یافت نشد');
+                throw ('اطلاعاتی برای این دارو یافت نشد');
             }
         } catch (message) {
             throw message;
@@ -132,7 +132,8 @@ class Medicine {
     
 
 
-    async addMedicine(medicineData) {
+    async addMedicine(req, res) {
+        const medicineData = req.body;
         // Destructure the medicine data
         const { drug_name, salt, dosag_form, strengh, route_of_use, ATCC_code, ingredient, approved_clinical_indication, access_level, remarks, date, company_id } = medicineData;
 
@@ -145,7 +146,7 @@ class Medicine {
         const checkQuery = "SELECT * FROM medicine WHERE ATCC_code = ?";
         const [rows] = await db.connection.execute(checkQuery, [ATCC_code]);
         if (rows.length > 0) {
-            throw new Error('این کد قبلا برای داروی دیگری ثبت شده است');
+            throw ('این کد قبلا برای داروی دیگری ثبت شده است');
         }
 
         // Insert the new medicine
@@ -162,7 +163,8 @@ class Medicine {
 
         await db.connection.execute(insertQuery, insertValues);
 
-        return 'دارو با موفقیت ثبت شد'; // Success message
+        return res.status(201).json({ message: 'دارو با موفقیت ثبت شد' });
+       
     };
 
     
@@ -249,7 +251,8 @@ class Medicine {
     
 
 
-    async deleteMedicine(items){
+    async deleteMedicine(req, res) {
+        const items = req.body;
         const token = req.headers['authorization'] && req.headers['authorization'].split(' ')[1];
     
         if (!token) {
@@ -266,12 +269,14 @@ class Medicine {
     
             if (rows.length === 0) {
                 // Medicine does not exist
-                return 'همچین دارویی در دیتابیس وجود ندارد';
+                return res.status(401).json({ message: 'همچین دارویی در دیتابیس وجود ندارد' });
+
             }
     
             // Medicine exists, proceed with deletion
             await db.connection.execute(deleteQuery, [ATCC_code, company_id]);
-            return 'دارو با موفقیت از لیست داروها پاک شد';
+            return res.status(201).json({ message: 'دارو با موفقیت از لیست داروها پاک شد' });
+
         } catch (message) {
             throw message;
         }
