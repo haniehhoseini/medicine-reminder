@@ -46,6 +46,40 @@ exports.registerRelatives = async (req, res) => {
     }
 }
 
+exports.updatePatient = async (req, res) => {
+    try {
+        await Auth.patientUpdate(req, res);
+    } catch (message) {
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+exports.updateDoctor = async (req, res) => {
+    try{
+        await Auth.doctorUpdate(req, res);
+    } catch{
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+exports.updateCompany = async (req, res) => {
+    try {
+        await Auth.companyUpdate(req, res);
+        //res.json(answer);
+    } catch (message) {
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+exports.updateRelatives = async (req, res) => {
+    try {
+        await Auth.relativesUpdate(req, res);
+        //res.json(answer);
+    } catch (message) {
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
 exports.getMe = async(req , res) => {
     try {
         await Auth.getMe(req, res);

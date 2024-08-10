@@ -128,6 +128,51 @@ class Auth {
         }
     }
     
+    async patientUpdate(req, res) {
+        const items = req.body;
+
+        try{
+            const decoded = req.user;
+            const { codemeli } = decoded;
+            const { password, firstname, lastname, mobile, address, gender, image_url, birthday, relatives_id, ensurance } = items;
+            const query = `UPDATE user SET password =?, firstname =?, lastname =?, mobile =?, address =?, gender =?, image_url =?, birthday =?, relatives_id =?, ensurance =? WHERE codemeli =?`;
+            const formattedBirthday = this.formatDate(birthday);
+            const formattedRelativesId = this.formatInteger(relatives_id);
+            const hashpassword = await bcrypt.hash(password, 10);
+            const values = [
+                codemeli ?? null,
+                hashpassword,
+                firstname ?? null,
+                lastname ?? null,
+                mobile ?? null,
+                address ?? null,
+                gender ?? null,
+                image_url,
+                formattedBirthday,
+                formattedRelativesId,
+                ensurance ?? null,
+            ];
+    
+            try {
+                const [result] = await db.connection.execute(query, values);
+                return res.status(201).json({ message: 'کاربر با موفقیت اپدیت شد', result });
+            } catch (message) {
+                return res.status(500).json({ message: 'خطای داخلی سرور. لطفاً دوباره تلاش کنید.' });
+            }
+
+
+        }catch (error) {
+            console.error('Error verifying token:', error);
+    
+            if (error.name === 'TokenExpiredError') {
+                return res.status(401).json({ message: 'لطفا یکبار دیگر وارد شوید' });
+            } else if (error.name === 'JsonWebTokenError') {
+                return res.status(401).json({ message: 'احراز هویت نامعتبر است' });
+            } else {
+                return res.status(500).json({ message: 'خطایی در سرور رخ داده است' });
+            }
+        }
+    }
 
     async exitRegisterDoctor(items) {
         const { codemeli } = items;
@@ -226,6 +271,63 @@ class Auth {
         }
     }
 
+    async doctorUpdate(req, res) {
+        const items = req.body;
+
+        try{
+            const decoded = req.user;
+            const { codemeli } = decoded;
+            const {         
+                password, 
+                firstname, 
+                lastname, 
+                address,
+                city,
+                hospital, 
+                gender, 
+                image_url, 
+                birthday, 
+                expertise,
+                code } = items;
+            const query = `UPDATE doctor SET password =?, firstname =?, lastname =?, address =? city =?, hospital =?, gender =?, image_url =?, birthday =?, expertise =?, ensurance =?, code =? WHERE codemeli =?`;
+            const formattedBirthday = this.formatDate(birthday);
+            const hashpassword = await bcrypt.hash(password, 10);
+            const values = [
+                codemeli ?? null,
+                hashpassword,
+                firstname ?? null,
+                lastname ?? null,
+                address ?? null,
+                city ?? null,
+                hospital ?? null,
+                gender ?? null,
+                image_url,
+                formattedBirthday,
+                expertise ?? null,,
+                code ?? null,
+            ];
+    
+            try {
+                const [result] = await db.connection.execute(query, values);
+                return res.status(201).json({ message: 'کاربر با موفقیت اپدیت شد', result });
+            } catch (message) {
+                return res.status(500).json({ message: 'خطای داخلی سرور. لطفاً دوباره تلاش کنید.' });
+            }
+
+
+        }catch (error) {
+            console.error('Error verifying token:', error);
+    
+            if (error.name === 'TokenExpiredError') {
+                return res.status(401).json({ message: 'لطفا یکبار دیگر وارد شوید' });
+            } else if (error.name === 'JsonWebTokenError') {
+                return res.status(401).json({ message: 'احراز هویت نامعتبر است' });
+            } else {
+                return res.status(500).json({ message: 'خطایی در سرور رخ داده است' });
+            }
+        }
+    }
+
     async exitRegisterCompany(items){
         const { codemeli } = items;
         const query = 'SELECT * FROM company WHERE codemeli = ?';
@@ -305,8 +407,52 @@ class Auth {
             return res.status(500).json({ message: 'خطا در ثبت کاربر', error: error.message });
         }
     }
+    async companyUpdate(req, res) {
+        const items = req.body;
+
+        try{
+            const decoded = req.user;
+            const { codemeli } = decoded;
+            console.log(decoded);
+            const {       
+                password,
+                firstname,
+                lastname,
+                license_code,
+                mobile,
+                image_url } = items;
+            const query = `UPDATE company SET password =?, firstname =?, lastname =?, license_code =? mobile =?, image_url =?, WHERE codemeli =?`;
+            const hashpassword = await bcrypt.hash(password, 10);
+            const values = [
+                codemeli ?? null,
+                hashpassword,
+                firstname ?? null,
+                lastname ?? null,
+                license_code ?? null,
+                mobile ?? null,
+                image_url,
+            ];
     
+            try {
+                const [result] = await db.connection.execute(query, values);
+                return res.status(201).json({ message: 'کاربر با موفقیت اپدیت شد', result });
+            } catch (message) {
+                return res.status(500).json({ message: 'خطای داخلی سرور. لطفاً دوباره تلاش کنید.' });
+            }
+
+
+        }catch (error) {
+            console.error('Error verifying token:', error);
     
+            if (error.name === 'TokenExpiredError') {
+                return res.status(401).json({ message: 'لطفا یکبار دیگر وارد شوید' });
+            } else if (error.name === 'JsonWebTokenError') {
+                return res.status(401).json({ message: 'احراز هویت نامعتبر است' });
+            } else {
+                return res.status(500).json({ message: 'خطایی در سرور رخ داده است' });
+            }
+        }
+    }
 
     async exitRegisterRelatives(items){
         const { codemeli } = items;
@@ -380,7 +526,53 @@ class Auth {
         } else {
             return res.status(500).json({ message: 'کاربری با این مشخصات قبلا ثبت نام کرده است' });
         }
-    }    
+    }  
+    async relativesUpdate(req, res) {
+        const items = req.body;
+
+        try{
+            const decoded = req.user;
+            const { codemeli } = decoded;
+            const {
+                password, 
+                firstname, 
+                lastname, 
+                mobile,
+                user_id, 
+                image_url,  } = items;
+            const query = `UPDATE relatives SET password =?, firstname =?, lastname =?, user_id =?, image_url =?, WHERE codemeli =?`;
+            
+            const hashpassword = await bcrypt.hash(password, 10);
+            const values = [
+                codemeli ?? null,
+                hashpassword,
+                firstname ?? null,
+                lastname ?? null,
+                mobile ?? null,
+                user_id ?? null,
+                image_url ?? null,
+            ];
+    
+            try {
+                const [result] = await db.connection.execute(query, values);
+                return res.status(201).json({ message: 'کاربر با موفقیت اپدیت شد', result });
+            } catch (message) {
+                return res.status(500).json({ message: 'خطای داخلی سرور. لطفاً دوباره تلاش کنید.' });
+            }
+
+
+        }catch (error) {
+            console.error('Error verifying token:', error);
+    
+            if (error.name === 'TokenExpiredError') {
+                return res.status(401).json({ message: 'لطفا یکبار دیگر وارد شوید' });
+            } else if (error.name === 'JsonWebTokenError') {
+                return res.status(401).json({ message: 'احراز هویت نامعتبر است' });
+            } else {
+                return res.status(500).json({ message: 'خطایی در سرور رخ داده است' });
+            }
+        }
+    }  
 
     async login(req, res) {
         const items = req.body;

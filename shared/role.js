@@ -1,9 +1,8 @@
 const Roles = Object.freeze({
-    ADMIN: 'admin',
-    DOCTOR: 'doctor',
-    PATIENT: 'patient',
-    PHARMACIST: 'pharmacist',
-    RELATIVES: 'relatives'
+    DOCTOR: 'پزشک',
+    PATIENT: 'بیمار',
+    PHARMACIST: 'داروساز',
+    RELATIVES: 'اعضای خانواده یا پرستار بیمار'
 });
 
 module.exports = Roles;
