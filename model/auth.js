@@ -47,7 +47,7 @@ class Auth {
         // بررسی وجود فیلدهای الزامی
         for (const field of requiredFields) {
             if (!items[field]) {
-                return res.status(400).json({ message: `فیلد ${field} الزامی است و نباید خالی باشد.` });
+                return res.status(401).json({ message: `فیلد ${field} الزامی است و نباید خالی باشد.` });
             }
         }
     
@@ -233,73 +233,79 @@ class Auth {
         return rows.length === 0;
     }
 
-    async registerCompany(req , res){
+    async registerCompany(req, res) {
         const items = req.body;
         const requiredFields = [
-            'codemeli', 
-            'password', 
-            'firstname', 
-            'lastname', 
-            'mobile', 
+            'codemeli',
+            'password',
+            'firstname',
+            'lastname',
+            'mobile',
             'licenseـcode'
         ];
     
+        // چک کردن فیلدهای الزامی
         for (const field of requiredFields) {
             if (!items[field]) {
-                return res.status(401).json({ message: `فیلد ${field} الزامی است و نباید خالی باشد.` });
+                return res.status(400).json({ message: `فیلد ${field} الزامی است و نباید خالی باشد.` });
             }
         }
-        if (await this.exitRegisterCompany(items)) {
-            const { 
-                codemeli, 
-                password, 
-                firstname, 
-                lastname,
-                licenseـcode, 
-                mobile,
-                role,
-                image_url
-            } = items;
     
-            const query = `INSERT INTO company (
-                codemeli, 
-                password, 
-                firstname,
-                lastname, 
-                licenseـcode, 
-                mobile,
-                role,
-                image_url ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+        try {
+            // بررسی اینکه آیا شرکت قبلاً ثبت‌نام کرده است
+            if (await this.exitRegisterCompany(items)) {
+                const {
+                    codemeli,
+                    password,
+                    firstname,
+                    lastname,
+                    licenseـcode,
+                    mobile,
+                    role,
+                    image_url
+                } = items;
+    
+                const query = `INSERT INTO company (
+                    codemeli,
+                    password,
+                    firstname,
+                    lastname,
+                    licenseـcode,
+                    mobile,
+                    role,
+                    image_url
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
     
                 const hashpassword = await bcrypt.hash(password, 10);
     
-        
                 let finalImageUrl = image_url;
                 if (!finalImageUrl) {
                     finalImageUrl = 'https://i.pngimg.me/thumb/f/720/m2i8A0K9A0b1G6H7.jpg';
                 }
     
                 const values = [
-                    codemeli ?? null, 
-                    hashpassword, 
-                    firstname ?? null, 
+                    codemeli ?? null,
+                    hashpassword,
+                    firstname ?? null,
                     lastname ?? null,
-                    licenseـcode ?? null, 
+                    licenseـcode ?? null,
                     mobile ?? null,
                     role ?? Roles.PHARMACIST,
                     finalImageUrl
                 ];
     
-                try {
-                    const [res] = await db.connection.execute(query, values);
-                    return res.status(201).json({ message: 'کاربر با موفقیت ثبت شد', res });
-                } catch (message) {
-                    throw message;  
-                }
+                // اجرای کوئری و ذخیره نتیجه
+                const [result] = await db.connection.execute(query, values);
+                return res.status(201).json({ message: 'کاربر با موفقیت ثبت شد', result });
             } else {
-                return res.status(401).json({ message: 'کاربری با این مشخصات قبلا ثبت نام کرده است' });
+                return res.status(409).json({ message: 'کاربری با این مشخصات قبلاً ثبت نام کرده است' });
             }
+        } catch (message) {
+            console.error('Database error:', error);
+            return res.status(500).json({ message: 'خطا در ثبت کاربر', message });
+        }
     }
+    
 
     async exitRegisterRelatives(items){
         const { codemeli } = items;
@@ -321,7 +327,7 @@ class Auth {
     
         for (const field of requiredFields) {
             if (!items[field]) {
-                return res.status(401).json({ message: `فیلد ${field} الزامی است و نباید خالی باشد.` });
+                return res.status(500).json({ message: `فیلد ${field} الزامی است و نباید خالی باشد.` });
             }
         }
         if (await this.exitRegisterRelatives(items)) {
@@ -371,15 +377,14 @@ class Auth {
                     throw message;  
                 }
         } else {
-            return res.status(401).json({ message: 'کاربری با این مشخصات قبلا ثبت نام کرده است' });
+            return res.status(500).json({ message: 'کاربری با این مشخصات قبلا ثبت نام کرده است' });
         }
     }    
-   
+
     async login(req, res) {
-        const items = req.body
+        const items = req.body;
         const { codemeli, password, role } = items;
-        
-        console.log(items);
+    
         let tableName;
         switch (role) {
             case 'doctor':
@@ -395,16 +400,17 @@ class Auth {
                 tableName = 'user';
                 break;
             default:
-                throw new Error('Unknown role');
+                return res.status(400).json({ message: 'نقش کاربری نامعتبر است' });
         }
-        const query = `SELECT password, role, firstname ,lastname, image_url FROM ${tableName} WHERE codemeli = ?`;
-
+    
+        const query = `SELECT password, role, firstname, lastname, image_url FROM ${tableName} WHERE codemeli = ?`;
+    
         try {
             const [list] = await db.connection.execute(query, [codemeli]);
             if (list.length === 0) {
-                return res.status(401).json({ message: 'کدملی یا رمز شما یا حالت اشتباه میباشد' });
+                return res.status(401).json({ message: 'کدملی، رمز عبور یا نقش شما اشتباه است' });
             }
-
+    
             const user = list[0];
             const isPasswordValid = await bcrypt.compare(password, user.password);
     
@@ -414,33 +420,26 @@ class Auth {
                         codemeli, 
                         role: user.role, 
                         firstname: user.firstname, 
-                        lastname: user.lastname ,
+                        lastname: user.lastname,
                         ensurance: user.ensurance,
                         image_url: user.image_url
                     },
                     secret,
                     { expiresIn: '1h' }
                 );
-                return res.status(201).json({ token, message:'با موفقیت وارد شدید' });
+                return res.status(200).json({ token, message: 'با موفقیت وارد شدید' });
             } else {
-                return res.status(401).json({ message: 'کدملی یا رمز یا حالت اشتباه میباشد' });
+                return res.status(401).json({ message: 'کدملی، رمز عبور یا نقش شما اشتباه است' });
             }
-        } catch (message) {
-            throw message;  
+        } catch (error) {
+            console.error('Login error:', error);
+            return res.status(500).json({ message: 'خطایی در سرور رخ داده است' });
         }
     }
-
-   
+    
     async getMe(req, res) {
-        const token = req.headers['authorization'] && req.headers['authorization'].split(' ')[1];
-    
-        if (!token) {
-            return res.status(401).json({ error: 'لطفا ابتدا وارد شوید' });
-        }
-    
         try {
-            const decoded = jwt.verify(token, secret);
-            
+            const decoded = req.user;
             
             let tableName;
             switch (decoded.role) {
@@ -457,29 +456,32 @@ class Auth {
                     tableName = 'user';
                     break;
                 default:
-                    throw new Error('Unknown role');
+                    return res.status(400).json({ error: 'نقش کاربری نامعتبر است' });
             }
     
             const query = `SELECT * FROM ${tableName} WHERE codemeli = ?`;
             const [rows] = await db.connection.execute(query, [decoded.codemeli]);
     
             if (rows.length === 0) {
-                return res.status(401).json({ error: 'همچنین کاربری یافت نشد' });
+                return res.status(404).json({ error: 'کاربری با این مشخصات یافت نشد' });
             }
     
             const user = rows[0];
-            return res.status(201).json({ message: 'کاربر با موفقیت ثبت شد', user });
-        } catch (message) {
-            
-            if (message.name === 'TokenExpiredError') {
+            return res.status(200).json({ message: 'اطلاعات کاربر با موفقیت دریافت شد', user });
+    
+        } catch (error) {
+            console.error('Error verifying token:', error);
+    
+            if (error.name === 'TokenExpiredError') {
                 return res.status(401).json({ message: 'لطفا یکبار دیگر وارد شوید' });
-            } else if (message.name === 'JsonWebTokenError') {
+            } else if (error.name === 'JsonWebTokenError') {
                 return res.status(401).json({ message: 'احراز هویت نامعتبر است' });
             } else {
-                return res.status(401).json({ message: 'اختلال در سرور' });
+                return res.status(500).json({ message: 'خطایی در سرور رخ داده است' });
             }
         }
     }
-
+    
+    
 }
 module.exports = new Auth();
