@@ -130,38 +130,56 @@ class Auth {
     
     async patientUpdate(req, res) {
         const items = req.body;
-
-        try{
+    
+        try {
             const decoded = req.user;
+            console.log(decoded);
             const { codemeli } = decoded;
             const { password, firstname, lastname, mobile, address, gender, image_url, birthday, relatives_id, ensurance } = items;
-            const query = `UPDATE user SET password =?, firstname =?, lastname =?, mobile =?, address =?, gender =?, image_url =?, birthday =?, relatives_id =?, ensurance =? WHERE codemeli =?`;
+    
+            // Format values
             const formattedBirthday = this.formatDate(birthday);
             const formattedRelativesId = this.formatInteger(relatives_id);
-            const hashpassword = await bcrypt.hash(password, 10);
+            const hashpassword = password ? await bcrypt.hash(password, 10) : null;
+    
+            // SQL query
+            const query = `UPDATE user SET
+                password = ?,
+                firstname = ?,
+                lastname = ?,
+                mobile = ?,
+                address = ?,
+                gender = ?,
+                image_url = ?,
+                birthday = ?,
+                relatives_id = ?,
+                ensurance = ?
+                WHERE codemeli = ?`;
+    
+            // Values array
             const values = [
-                codemeli ?? null,
                 hashpassword,
                 firstname ?? null,
                 lastname ?? null,
                 mobile ?? null,
                 address ?? null,
                 gender ?? null,
-                image_url,
+                image_url ?? null,
                 formattedBirthday,
                 formattedRelativesId,
                 ensurance ?? null,
+                codemeli
             ];
     
             try {
                 const [result] = await db.connection.execute(query, values);
-                return res.status(201).json({ message: 'کاربر با موفقیت اپدیت شد', result });
-            } catch (message) {
+                return res.status(200).json({ message: 'کاربر با موفقیت اپدیت شد', result });
+            } catch (dbError) {
+                console.error('Database update error:', dbError);
                 return res.status(500).json({ message: 'خطای داخلی سرور. لطفاً دوباره تلاش کنید.' });
             }
-
-
-        }catch (error) {
+    
+        } catch (error) {
             console.error('Error verifying token:', error);
     
             if (error.name === 'TokenExpiredError') {
@@ -173,6 +191,7 @@ class Auth {
             }
         }
     }
+    
 
     async exitRegisterDoctor(items) {
         const { codemeli } = items;
@@ -273,27 +292,45 @@ class Auth {
 
     async doctorUpdate(req, res) {
         const items = req.body;
-
-        try{
+    
+        try {
             const decoded = req.user;
             const { codemeli } = decoded;
-            const {         
+            const { 
                 password, 
                 firstname, 
                 lastname, 
-                address,
-                city,
+                address, 
+                city, 
                 hospital, 
                 gender, 
                 image_url, 
                 birthday, 
-                expertise,
-                code } = items;
-            const query = `UPDATE doctor SET password =?, firstname =?, lastname =?, address =? city =?, hospital =?, gender =?, image_url =?, birthday =?, expertise =?, ensurance =?, code =? WHERE codemeli =?`;
+                expertise, 
+                code 
+            } = items;
+    
+            // Format values
             const formattedBirthday = this.formatDate(birthday);
-            const hashpassword = await bcrypt.hash(password, 10);
+            const hashpassword = password ? await bcrypt.hash(password, 10) : null;
+    
+            // SQL query
+            const query = `UPDATE doctor SET 
+                password = ?, 
+                firstname = ?, 
+                lastname = ?, 
+                address = ?, 
+                city = ?, 
+                hospital = ?, 
+                gender = ?, 
+                image_url = ?, 
+                birthday = ?, 
+                expertise = ?, 
+                code = ? 
+                WHERE codemeli = ?`;
+    
+            // Values array
             const values = [
-                codemeli ?? null,
                 hashpassword,
                 firstname ?? null,
                 lastname ?? null,
@@ -301,21 +338,22 @@ class Auth {
                 city ?? null,
                 hospital ?? null,
                 gender ?? null,
-                image_url,
+                image_url ?? null,
                 formattedBirthday,
-                expertise ?? null,,
+                expertise ?? null,
                 code ?? null,
+                codemeli
             ];
     
             try {
                 const [result] = await db.connection.execute(query, values);
-                return res.status(201).json({ message: 'کاربر با موفقیت اپدیت شد', result });
-            } catch (message) {
+                return res.status(200).json({ message: 'دکتر با موفقیت بروزرسانی شد', result });
+            } catch (dbError) {
+                console.error('Database update error:', dbError);
                 return res.status(500).json({ message: 'خطای داخلی سرور. لطفاً دوباره تلاش کنید.' });
             }
-
-
-        }catch (error) {
+    
+        } catch (error) {
             console.error('Error verifying token:', error);
     
             if (error.name === 'TokenExpiredError') {
@@ -327,6 +365,7 @@ class Auth {
             }
         }
     }
+    
 
     async exitRegisterCompany(items){
         const { codemeli } = items;
@@ -409,39 +448,55 @@ class Auth {
     }
     async companyUpdate(req, res) {
         const items = req.body;
-
-        try{
+    
+        try {
             const decoded = req.user;
             const { codemeli } = decoded;
             console.log(decoded);
+    
             const {       
                 password,
                 firstname,
                 lastname,
                 license_code,
                 mobile,
-                image_url } = items;
-            const query = `UPDATE company SET password =?, firstname =?, lastname =?, license_code =? mobile =?, image_url =?, WHERE codemeli =?`;
-            const hashpassword = await bcrypt.hash(password, 10);
+                image_url 
+            } = items;
+    
+            // SQL query
+            const query = `UPDATE company SET 
+                password = ?, 
+                firstname = ?, 
+                lastname = ?, 
+                license_code = ?, 
+                mobile = ?, 
+                image_url = ? 
+                WHERE codemeli = ?`;
+    
+            // Hash password if provided
+            const hashpassword = password ? await bcrypt.hash(password, 10) : null;
+    
+            // Values array
             const values = [
-                codemeli ?? null,
                 hashpassword,
                 firstname ?? null,
                 lastname ?? null,
                 license_code ?? null,
                 mobile ?? null,
-                image_url,
+                image_url ?? null,
+                codemeli
             ];
     
+            // Execute query
             try {
                 const [result] = await db.connection.execute(query, values);
-                return res.status(201).json({ message: 'کاربر با موفقیت اپدیت شد', result });
-            } catch (message) {
+                return res.status(200).json({ message: 'شرکت با موفقیت بروزرسانی شد', result });
+            } catch (dbError) {
+                console.error('Database update error:', dbError);
                 return res.status(500).json({ message: 'خطای داخلی سرور. لطفاً دوباره تلاش کنید.' });
             }
-
-
-        }catch (error) {
+    
+        } catch (error) {
             console.error('Error verifying token:', error);
     
             if (error.name === 'TokenExpiredError') {
@@ -453,6 +508,7 @@ class Auth {
             }
         }
     }
+    
 
     async exitRegisterRelatives(items){
         const { codemeli } = items;
@@ -529,8 +585,8 @@ class Auth {
     }  
     async relativesUpdate(req, res) {
         const items = req.body;
-
-        try{
+    
+        try {
             const decoded = req.user;
             const { codemeli } = decoded;
             const {
@@ -539,29 +595,43 @@ class Auth {
                 lastname, 
                 mobile,
                 user_id, 
-                image_url,  } = items;
-            const query = `UPDATE relatives SET password =?, firstname =?, lastname =?, user_id =?, image_url =?, WHERE codemeli =?`;
-            
-            const hashpassword = await bcrypt.hash(password, 10);
+                image_url 
+            } = items;
+    
+            // SQL query
+            const query = `UPDATE relatives SET 
+                password = ?, 
+                firstname = ?, 
+                lastname = ?, 
+                mobile = ?, 
+                user_id = ?, 
+                image_url = ? 
+                WHERE codemeli = ?`;
+    
+            // Hash password if provided
+            const hashpassword = password ? await bcrypt.hash(password, 10) : null;
+    
+            // Values array
             const values = [
-                codemeli ?? null,
                 hashpassword,
                 firstname ?? null,
                 lastname ?? null,
                 mobile ?? null,
                 user_id ?? null,
                 image_url ?? null,
+                codemeli
             ];
     
+            // Execute query
             try {
                 const [result] = await db.connection.execute(query, values);
-                return res.status(201).json({ message: 'کاربر با موفقیت اپدیت شد', result });
-            } catch (message) {
+                return res.status(200).json({ message: 'اطلاعات با موفقیت بروزرسانی شد', result });
+            } catch (dbError) {
+                console.error('Database update error:', dbError);
                 return res.status(500).json({ message: 'خطای داخلی سرور. لطفاً دوباره تلاش کنید.' });
             }
-
-
-        }catch (error) {
+    
+        } catch (error) {
             console.error('Error verifying token:', error);
     
             if (error.name === 'TokenExpiredError') {
@@ -572,7 +642,8 @@ class Auth {
                 return res.status(500).json({ message: 'خطایی در سرور رخ داده است' });
             }
         }
-    }  
+    }
+    
 
     async login(req, res) {
         const items = req.body;
