@@ -651,16 +651,16 @@ class Auth {
     
         let tableName;
         switch (role) {
-            case 'doctor':
+            case 'DOCTOR':
                 tableName = 'doctor';
                 break;
-            case 'pharmacist':
+            case 'PHARMACIST':
                 tableName = 'company';
                 break;
-            case 'relatives':
+            case 'RELATIVES':
                 tableName = 'relatives';
                 break;
-            case 'patient':
+            case 'PATIENT':
                 tableName = 'user';
                 break;
             default:
