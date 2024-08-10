@@ -170,7 +170,9 @@ class Medicine {
     
     
     
-    async updateMedicine(old_ATCC_code, items) {
+    async updateMedicine(req, res) {
+        const old_ATCC_code = req.params.ATCC_code;
+        const items = req.body;
         const token = req.headers['authorization'] && req.headers['authorization'].split(' ')[1];
     
         if (!token) {
@@ -229,21 +231,23 @@ class Medicine {
             // Check if the medicine exists
             const [rows] = await db.connection.execute(checkQuery, [old_ATCC_code, company_id]);
             if (rows.length === 0) {
-                // Medicine does not exist
-                return 'همچین دارویی برای این شرکت ثبت نشده است';
+                return res.status(401).json({ error: 'همچین دارویی برای این شرکت ثبت نشده است' });
+
             }
     
             // Check if the new ATCC_code is already in use by another record
             if (ATCC_code !== old_ATCC_code) {
                 const [duplicateRows] = await db.connection.execute(duplicateCheckQuery, [ATCC_code]);
                 if (duplicateRows.length > 0) {
-                    return 'لطفا کد دیگری انتخاب کنید';
+                    return res.status(401).json({ error: 'لطفا کد دیگری انتخاب کنید' });
+
                 }
             }
     
             // Medicine exists, proceed with update
             await db.connection.execute(updateQuery, updateValues);
-            return 'دارو با موفیت تغییر یافت';
+            return res.status(201).json({ error: 'دارو با موفیت تغییر یافت' });
+
         } catch (message) {
             throw message;
         }

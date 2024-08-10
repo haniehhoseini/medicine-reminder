@@ -48,7 +48,7 @@ exports.deleteMedicine = async (req , res) =>{
 
 exports.updateMedicine = async (req , res) =>{
     try {
-        const message = await medicine.updateMedicine(req.params.ATCC_code , req.body);
+        const message = await medicine.updateMedicine(req , res);
         res.status(200).send(message);
     } catch (message) {
         res.status(500).send('دارو اپدیت نشد');
