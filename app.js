@@ -5,6 +5,7 @@ const http = require('http');  // اضافه کردن این خط برای ای�
 const { initWebSocket } = require('./sockets/webSocket');
 const scheduleNotifications = require('./cron/scheduler');
 
+
 const authRoute = require("./routes/auth.route");
 const medicineRoute = require("./routes/medicine.route");
 const doctorRoute = require("./routes/doctor.route");
@@ -30,7 +31,7 @@ app.use('/api/enums', enumsRoles);
 app.use('/api/', notificationsRoutes);
 
 // WebSocket
-initWebSocket(server);  // متصل کردن WebSocket به سرور
+initWebSocket(server);  
 
 // زمان‌بندی نوتیفیکیشن‌ها
 scheduleNotifications();
