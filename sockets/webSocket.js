@@ -10,8 +10,7 @@ const initWebSocket = (server) => {
                 const data = JSON.parse(message);
                 if (data.type === 'auth') {
                     const userId = data.userId; // Get the userId for authentication
-                    clients[userId] = ws; // Associate WebSocket with userId
-                    console.log(`User ${userId} connected`);
+                    clients[userId] = ws; 
                 }
             } catch (err) {
                 console.error('Error in WebSocket:', err);

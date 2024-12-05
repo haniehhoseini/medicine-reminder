@@ -3,7 +3,6 @@ const Auth = require('../model/auth');
 exports.login = async (req, res) => {
     try {
         await Auth.login(req, res);
-        //res.json(answer);
     } catch (message) {
         res.status(500).json({ message: 'Internal server error' });
     }
@@ -13,7 +12,6 @@ exports.registerPatient = async (req, res) => {
     try {
         
         await Auth.registerPatient(req, res);
-        //res.json(answer);
     } catch (message) {
         res.status(500).json({ message: 'خطای داخلی سرور لطفا بعدا تلاش کنید' });
     }

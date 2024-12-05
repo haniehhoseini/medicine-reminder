@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const secret = require('../config/keys').secretOrKey;
 const Roles = require('../shared/role');
+const { scheduleNotifications } = require('../model/notifications');
 
 
 
@@ -647,6 +648,8 @@ class Auth {
 
     async login(req, res) {
         const items = req.body;
+        console.log(req.body);
+        
         const { codemeli, password, role } = items;
     
         let tableName;
@@ -667,7 +670,7 @@ class Auth {
                 return res.status(400).json({ message: 'نقش کاربری نامعتبر است' });
         }
     
-        const query = `SELECT password, role, firstname, lastname, image_url FROM ${tableName} WHERE codemeli = ?`;
+        const query = `SELECT password, role, firstname, lastname, image_url, user_id FROM ${tableName} WHERE codemeli = ?`;
     
         try {
             const [list] = await db.connection.execute(query, [codemeli]);
@@ -686,7 +689,9 @@ class Auth {
                         firstname: user.firstname, 
                         lastname: user.lastname,
                         ensurance: user.ensurance,
-                        image_url: user.image_url
+                        image_url: user.image_url,
+                        user_id: user.user_id
+                        
                     },
                     secret,
                     { expiresIn: '1h' }
@@ -725,6 +730,9 @@ class Auth {
     
             const query = `SELECT * FROM ${tableName} WHERE codemeli = ?`;
             const [rows] = await db.connection.execute(query, [decoded.codemeli]);
+            
+            await scheduleNotifications(decoded.user_id);
+
     
             if (rows.length === 0) {
                 return res.status(404).json({ error: 'کاربری با این مشخصات یافت نشد' });
