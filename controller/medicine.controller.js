@@ -92,6 +92,8 @@ exports.getMedicineByCompanyID = async (req, res) => {
             // جستجو برای زمان مصرف داروها در دیتابیس
             const medicationTimes = await medicine.getMedicationTimesFromDatabase(medications);
 
+            await medicine.saveMedicationsToPrescription(4, medicationTimes);
+
             // ارسال پاسخ به کاربر
             return res.status(200).json({
                 success: true,

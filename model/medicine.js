@@ -338,8 +338,44 @@ class Medicine {
     
         return medicationTimes;
     }
+
+    async saveMedicationsToPrescription(userId, medications) {
+        try {
+            const seenDrugs = new Set(); 
+            for (const med of medications) {
+                const { drug_name, time } = med;
     
+                // بررسی اینکه دارو قبلاً ثبت نشده باشد
+                if (!seenDrugs.has(drug_name)) {
+                    const query = `
+                        INSERT INTO prescription
+                        (user_id, drug_name, clock, count, amount_of_use) 
+                        VALUES (?, ?, ?, ?, ?)
+                    `;
     
+                    
+                    const count = 1; 
+                    const amount_of_use = "1 عدد در هر وعده"; 
+    
+                    await db.connection.execute(query, [
+                        userId,
+                        drug_name,
+                        time,
+                        count,
+                        amount_of_use,
+                    ]);
+    
+                    seenDrugs.add(drug_name); 
+                }
+            }
+    
+            console.log("Medications saved successfully.");
+        } catch (error) {
+            console.error("Error saving medications to prescription:", error);
+        }
+    }
+    
+   
     
 }
 
