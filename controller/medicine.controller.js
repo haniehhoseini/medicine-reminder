@@ -1,4 +1,5 @@
 const medicine = require('../model/medicine');
+const { extractMedicationsFromPdf } = require('../utils/pdfProcessor');
 
 exports.medicine = async (req , res ) =>{
     let answer = await medicine.getMedicine(req.params.page);
@@ -77,3 +78,29 @@ exports.getMedicineByCompanyID = async (req, res) => {
         res.status(500).send('داروهای این شرکت با موفقیت دریافت نشد');
     }
 };
+
+    exports.processPrescription = async (req, res) => {
+
+
+        try {
+            // دریافت مسیر فایل PDF از درخواست (فرض می‌کنیم فایل در `req.file` قرار دارد)
+            const pdfPath = req.file.path; 
+
+            // استخراج داروها از نسخه (PDF)
+            const medications = await extractMedicationsFromPdf(pdfPath);
+            
+            // جستجو برای زمان مصرف داروها در دیتابیس
+            const medicationTimes = await medicine.getMedicationTimesFromDatabase(medications);
+
+            // ارسال پاسخ به کاربر
+            return res.status(200).json({
+                success: true,
+                medications: medicationTimes
+            });
+        } catch (error) {
+            return res.status(500).json({
+                success: false,
+                message: error.message
+            });
+        }
+    }

@@ -313,6 +313,34 @@ class Medicine {
             throw message;
         }
     };
+
+    async getMedicationTimesFromDatabase(medications) {
+        const medicationTimes = [];
+        const seenDrugs = new Set(); // مجموعه‌ای برای پیگیری داروهای دیده شده
+    
+        for (const medName of medications) {
+            // جستجو در دیتابیس برای پیدا کردن دارو
+            const query = 'SELECT * FROM medicine WHERE drug_name LIKE ?'; 
+            const [results] = await db.connection.execute(query, [`%${medName}%`]);
+    
+            if (results.length > 0) {
+                const drug = results[0];
+                // بررسی اینکه زمان مصرف دارو وجود دارد و دارو تکراری نیست
+                if (drug.time && !seenDrugs.has(drug.drug_name)) {
+                    medicationTimes.push({
+                        drug_name: drug.drug_name,
+                        time: drug.time // زمان مصرف دارو
+                    });
+                    seenDrugs.add(drug.drug_name); // دارو را به مجموعه اضافه کن
+                }
+            }
+        }
+    
+        return medicationTimes;
+    }
+    
+    
+    
 }
 
 module.exports = new Medicine();
