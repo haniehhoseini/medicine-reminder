@@ -3,7 +3,6 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const secret = require('../config/keys').secretOrKey;
 const Roles = require('../shared/role');
-const { scheduleNotifications } = require('../model/notifications');
 
 
 
@@ -690,11 +689,10 @@ class Auth {
                         lastname: user.lastname,
                         ensurance: user.ensurance,
                         image_url: user.image_url,
-                        user_id: user.user_id
                         
                     },
                     secret,
-                    { expiresIn: '1h' }
+                    { expiresIn: '24h' }
                 );
                 return res.status(200).json({ token, message: 'با موفقیت وارد شدید' });
             } else {
@@ -730,8 +728,6 @@ class Auth {
     
             const query = `SELECT * FROM ${tableName} WHERE codemeli = ?`;
             const [rows] = await db.connection.execute(query, [decoded.codemeli]);
-            
-            await scheduleNotifications(decoded.user_id);
 
     
             if (rows.length === 0) {

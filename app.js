@@ -4,6 +4,11 @@ const bodyParser = require("body-parser");
 const { initWebSocket } = require('./sockets/webSocket');
 
 
+const { scheduleNotifications } = require('./model/notification');
+const notificationsRoute = require('./routes/notification.route');
+
+// شروع کرون
+scheduleNotifications();
 
 const authRoute = require("./routes/auth.route");
 const medicineRoute = require("./routes/medicine.route");
@@ -26,14 +31,15 @@ app.use("/api/", companyRoute);
 app.use("/api/", doctorRoute);
 app.use("/api/", medicineRoute);
 app.use('/api/enums', enumsRoles);
-
-
-// WebSocket
-initWebSocket(app);
+app.use('/api', notificationsRoute);  // اتصال مسیر
 
 
 
 
-app.listen(port ,()=>{
+
+server = app.listen(port ,()=>{
     console.log(`server listening on port ${port}`);
 })
+
+// WebSocket
+initWebSocket(server);
