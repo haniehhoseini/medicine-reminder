@@ -36,6 +36,6 @@ router.get('/medicinename/:page',  medicine)
       .put('/updatemedicine/:ATCC_code' , authenticateToken, authorizeRole([Roles.ADMIN, Roles.PHARMACIST]),  updateMedicine)
       .get('/medicinepicture/:ATCC_code',  getImageUrls)
       .get('/medicinebycompany/:company_id', authenticateToken, authorizeRole([Roles.ADMIN, Roles.PHARMACIST]), getMedicineByCompanyID)
-      .post('/upload-prescription/:user_id', authenticateToken, upload.single('prescription'), processPrescription);
+      .post('/upload-prescription/:user_id' , upload.single('prescription'), processPrescription);
 
 module.exports = router;
