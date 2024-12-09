@@ -20,7 +20,7 @@ class Doctor {
     }
 
     async searchDoctors(items) {
-        const { firstname , expertise } = items;
+        const { firstname , expertise, code } = items;
         let query = "SELECT * FROM doctor WHERE 1=1";
         let queryParams = [];
 
@@ -32,6 +32,11 @@ class Doctor {
         if (expertise) {
             query += " AND expertise LIKE ?";
             queryParams.push(`%${expertise}%`);
+        }
+
+        if (code) {
+            query += " AND code LIKE ?";
+            queryParams.push(`%${code}%`);
         }
         console.log(query);
         console.log(queryParams);

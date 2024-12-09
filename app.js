@@ -7,7 +7,8 @@ const { initWebSocket } = require('./sockets/webSocket');
 const { scheduleNotifications } = require('./model/notification');
 const notificationsRoute = require('./routes/notification.route');
 
-// شروع کرون
+
+// شروع کرون برای نوتیفیکیشن‌ها
 scheduleNotifications();
 
 const authRoute = require("./routes/auth.route");

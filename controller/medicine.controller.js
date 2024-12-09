@@ -85,6 +85,7 @@ exports.getMedicineByCompanyID = async (req, res) => {
         try {
             // دریافت مسیر فایل PDF از درخواست (فرض می‌کنیم فایل در `req.file` قرار دارد)
             const pdfPath = req.file.path; 
+            const user_id = req.params.user_id;
 
             // استخراج داروها از نسخه (PDF)
             const medications = await extractMedicationsFromPdf(pdfPath);
@@ -92,7 +93,7 @@ exports.getMedicineByCompanyID = async (req, res) => {
             // جستجو برای زمان مصرف داروها در دیتابیس
             const medicationTimes = await medicine.getMedicationTimesFromDatabase(medications);
 
-            await medicine.saveMedicationsToPrescription(4, medicationTimes);
+            await medicine.saveMedicationsToPrescription(user_id, medicationTimes);
 
             // ارسال پاسخ به کاربر
             return res.status(200).json({

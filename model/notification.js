@@ -2,18 +2,36 @@ const cron = require('node-cron');
 const db = require('../utils/database');
 const { sendNotificationToUser } = require('../sockets/webSocket');
 
-// تابعی برای ارسال نوتیفیکیشن‌ها بر اساس زمان مصرف
+// متغیر برای ذخیره کاربر فعلی
+let loggedInUserId = null;
+
+// تنظیم `loggedInUserId` هنگام ورود کاربر جدید
+exports.setLoggedInUser = (userId) => {
+    loggedInUserId = userId; // به‌روزرسانی کاربر لاگین شده
+    console.log(`Logged in user set to: ${userId}`);
+};
+
+// تابع ارسال نوتیفیکیشن‌ها بر اساس نسخه‌ها
 exports.scheduleNotifications = () => {
     cron.schedule('* * * * *', async () => { 
         const now = new Date();
         const currentHour = now.getHours();
         const currentMinute = now.getMinutes();
-        console.log(currentHour);
-        
+
+        // اگر هیچ کاربری لاگین نکرده باشد، کرون متوقف می‌شود
+        if (!loggedInUserId) {
+            console.log('No user is currently logged in.');
+            return;
+        }
 
         try {
-            const query = 'SELECT * FROM prescription';
-            const [prescriptions] = await db.connection.execute(query);
+            // دریافت نسخه‌های مربوط به کاربر فعلی
+            const query = `
+                SELECT * 
+                FROM prescription 
+                WHERE user_id = ?
+            `;
+            const [prescriptions] = await db.connection.execute(query, [loggedInUserId]);
 
             prescriptions.forEach((prescription) => {
                 const drugInterval = parseInt(prescription.clock); // فاصله زمانی مصرف دارو (به ساعت)
@@ -31,7 +49,7 @@ exports.scheduleNotifications = () => {
                 ) {
                     const message = `زمان مصرف داروی ${prescription.drug_name} رسیده است.`;
                     console.log(message); // برای لاگ
-                    sendNotificationToUser(prescription.user_id, message); // ارسال نوتیف
+                    sendNotificationToUser(loggedInUserId, message); // ارسال نوتیف به کاربر فعلی
                 }
             });
         } catch (error) {
