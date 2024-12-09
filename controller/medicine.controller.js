@@ -97,7 +97,7 @@ exports.getMedicineByCompanyID = async (req, res) => {
 
             // ارسال پاسخ به کاربر
             return res.status(200).json({
-                success: true,
+                success: 'دارو با موفقیت به حساب کاربری شما افزوده شد.',
                 medications: medicationTimes
             });
         } catch (error) {
