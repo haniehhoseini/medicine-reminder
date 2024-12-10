@@ -706,10 +706,24 @@ class Auth {
     
     async getMe(req, res) {
         try {
-            const decoded = req.user;
-            
+            const { user_id } = req.params;
+    
+            if (!user_id) {
+                return res.status(400).json({ error: 'شناسه کاربر ارسال نشده است' });
+            }
+    
+            // دریافت اطلاعات اولیه کاربر شامل نقش
+            const userQuery = `SELECT role FROM user WHERE user_id = ?`;
+            const [userRows] = await db.connection.execute(userQuery, [user_id]);
+    
+            if (userRows.length === 0) {
+                return res.status(404).json({ error: 'کاربری با این شناسه یافت نشد' });
+            }
+    
+            const userRole = userRows[0].role;
             let tableName;
-            switch (decoded.role) {
+    
+            switch (userRole) {
                 case 'doctor':
                     tableName = 'doctor';
                     break;
@@ -726,9 +740,9 @@ class Auth {
                     return res.status(400).json({ error: 'نقش کاربری نامعتبر است' });
             }
     
-            const query = `SELECT * FROM ${tableName} WHERE codemeli = ?`;
-            const [rows] = await db.connection.execute(query, [decoded.codemeli]);
-            setLoggedInUser(decoded.user_id);
+            // دریافت اطلاعات کامل از جدول مربوطه
+            const query = `SELECT * FROM ${tableName} WHERE user_id = ?`;
+            const [rows] = await db.connection.execute(query, [user_id]);
     
             if (rows.length === 0) {
                 return res.status(404).json({ error: 'کاربری با این مشخصات یافت نشد' });
@@ -738,17 +752,12 @@ class Auth {
             return res.status(200).json({ message: 'اطلاعات کاربر با موفقیت دریافت شد', user });
     
         } catch (error) {
-            console.error('Error verifying token:', error);
+            console.error('Error fetching user information:', error);
     
-            if (error.name === 'TokenExpiredError') {
-                return res.status(401).json({ message: 'لطفا یکبار دیگر وارد شوید' });
-            } else if (error.name === 'JsonWebTokenError') {
-                return res.status(401).json({ message: 'احراز هویت نامعتبر است' });
-            } else {
-                return res.status(500).json({ message: 'خطایی در سرور رخ داده است' });
-            }
+            return res.status(500).json({ message: 'خطایی در سرور رخ داده است' });
         }
     }
+    
     
     
 }
