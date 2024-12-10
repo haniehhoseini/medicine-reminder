@@ -96,10 +96,9 @@ exports.getMedicineByCompanyID = async (req, res) => {
             await medicine.saveMedicationsToPrescription(user_id, medicationTimes);
 
             // ارسال پاسخ به کاربر
-            return res.status(200).json({
-                success: 'دارو با موفقیت به حساب کاربری شما افزوده شد.',
-                medications: medicationTimes
-            });
+            return res.status(200).json(
+                'دارو با موفقیت به حساب کاربری شما افزوده شد.'
+            );
         } catch (error) {
             return res.status(500).json({
                 success: false,
