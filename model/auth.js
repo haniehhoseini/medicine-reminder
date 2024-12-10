@@ -707,6 +707,7 @@ class Auth {
     async getMe(req, res) {
         try {
             const { user_id } = req.params;
+            setLoggedInUser(user_id );
     
             if (!user_id) {
                 return res.status(400).json({ error: 'شناسه کاربر ارسال نشده است' });
