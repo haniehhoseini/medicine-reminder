@@ -693,8 +693,9 @@ class Auth {
                 // Add user_id to the token payload only if the table is 'user'
                 if (tableName === 'user') {
                     payload.user_id = user.user_id;
+                    setLoggedInUser(user.user_id);
                 }
-    
+                
                 const token = jwt.sign(payload, secret, { expiresIn: '24h' });
                 return res.status(200).json({ token, message: 'با موفقیت وارد شدید' });
             } else {
@@ -710,7 +711,7 @@ class Auth {
     async getMe(req, res) {
         try {
             const { user_id } = req.params;
-            setLoggedInUser(user_id );
+            
     
             if (!user_id) {
                 return res.status(400).json({ error: 'شناسه کاربر ارسال نشده است' });
