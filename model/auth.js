@@ -648,7 +648,7 @@ class Auth {
     async login(req, res) {
         const items = req.body;
         console.log(req.body);
-        
+    
         const { codemeli, password, role } = items;
     
         let tableName;
@@ -669,7 +669,7 @@ class Auth {
                 return res.status(400).json({ message: 'نقش کاربری نامعتبر است' });
         }
     
-        const query = `SELECT password, role, firstname, lastname, image_url, user_id FROM ${tableName} WHERE codemeli = ?`;
+        const query = `SELECT password, role, firstname, lastname, image_url${tableName === 'user' ? ', user_id' : ''} FROM ${tableName} WHERE codemeli = ?`;
     
         try {
             const [list] = await db.connection.execute(query, [codemeli]);
@@ -681,19 +681,21 @@ class Auth {
             const isPasswordValid = await bcrypt.compare(password, user.password);
     
             if (isPasswordValid) {
-                const token = jwt.sign(
-                    { 
-                        codemeli, 
-                        role: user.role, 
-                        firstname: user.firstname, 
-                        lastname: user.lastname,
-                        ensurance: user.ensurance,
-                        image_url: user.image_url,
-                        user_id: user.user_id
-                    },
-                    secret,
-                    { expiresIn: '24h' }
-                );
+                const payload = {
+                    codemeli,
+                    role: user.role,
+                    firstname: user.firstname,
+                    lastname: user.lastname,
+                    ensurance: user.ensurance,
+                    image_url: user.image_url
+                };
+    
+                // Add user_id to the token payload only if the table is 'user'
+                if (tableName === 'user') {
+                    payload.user_id = user.user_id;
+                }
+    
+                const token = jwt.sign(payload, secret, { expiresIn: '24h' });
                 return res.status(200).json({ token, message: 'با موفقیت وارد شدید' });
             } else {
                 return res.status(401).json({ message: 'کدملی، رمز عبور یا نقش شما اشتباه است' });
@@ -703,6 +705,7 @@ class Auth {
             return res.status(500).json({ message: 'خطایی در سرور رخ داده است' });
         }
     }
+    
     
     async getMe(req, res) {
         try {

@@ -95,14 +95,21 @@ exports.getMedicineByCompanyID = async (req, res) => {
 
             await medicine.saveMedicationsToPrescription(user_id, medicationTimes);
 
-            // ارسال پاسخ به کاربر
+            
+
             return res.status(200).json(
-                'دارو با موفقیت به حساب کاربری شما افزوده شد.'
+                '.دارو با موفقیت به حساب کاربری شما افزوده شد'
             );
         } catch (error) {
-            return res.status(500).json({
-                success: false,
-                message: error.message
-            });
+            return res.status(500).json('.نسخه ثبت نشد لطفا چند لحظه ی دیگر تلاش کنید');
         }
     }
+
+exports.fetchUserMedications = async (req, res) => {
+    try {
+        const medicines = await medicine.fetchUserMedications(req.params.user_id);
+        return res.status(200).json(medicines);
+    }catch(error) {
+        return res.status(500).json('.لطفا چند لحظه ی دیگر تلاش کنید');
+    }
+}

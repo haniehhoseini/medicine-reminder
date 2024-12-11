@@ -375,6 +375,29 @@ class Medicine {
         }
     }
     
+    async fetchUserMedications(userId) {
+        try {
+            const query = `
+                SELECT drug_name, clock, count, amount_of_use 
+                FROM prescription 
+                WHERE user_id = ?
+            `;
+    
+            const [medications] = await db.connection.execute(query, [userId]);
+    
+            if (medications.length === 0) {
+                return { message: 'هیچ دارویی برای این کاربر ثبت نشده است', medications: [] };
+            }
+    
+            return {
+                message: 'لیست داروها با موفقیت دریافت شد',
+                medications: medications
+            };
+        } catch (error) {
+            console.error('Error fetching user medications:', error);
+            return { message: 'خطایی در سرور رخ داده است', medications: [] };
+        }
+    }
    
     
 }
