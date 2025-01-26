@@ -646,66 +646,62 @@ class Auth {
     
 
     async login(req, res) {
-        const items = req.body;
-        console.log(req.body);
+        const { codemeli, password, role } = req.body;
     
-        const { codemeli, password, role } = items;
+        const roleTables = {
+            DOCTOR: 'doctor',
+            PHARMACIST: 'company',
+            RELATIVES: 'relatives',
+            PATIENT: 'user'
+        };
     
-        let tableName;
-        switch (role) {
-            case 'DOCTOR':
-                tableName = 'doctor';
-                break;
-            case 'PHARMACIST':
-                tableName = 'company';
-                break;
-            case 'RELATIVES':
-                tableName = 'relatives';
-                break;
-            case 'PATIENT':
-                tableName = 'user';
-                break;
-            default:
-                return res.status(400).json({ message: 'نقش کاربری نامعتبر است' });
+        const tableName = roleTables[role];
+        if (!tableName) {
+            return res.status(400).json({ message: 'نقش کاربری نامعتبر است' });
         }
     
-        const query = `SELECT password, role, firstname, lastname, image_url${tableName === 'user' ? ', user_id' : ''} FROM ${tableName} WHERE codemeli = ?`;
+        const query = `
+            SELECT password, role, firstname, lastname, image_url${tableName === 'user' ? ', user_id' : ''} 
+            FROM ${tableName} 
+            WHERE codemeli = ?
+        `;
     
         try {
             const [list] = await db.connection.execute(query, [codemeli]);
             if (list.length === 0) {
-                return res.status(401).json({ message: 'کدملی، رمز عبور یا نقش شما اشتباه است' });
+                return res.status(401).json({ message: 'اطلاعات وارد شده صحیح نیست' });
             }
     
             const user = list[0];
             const isPasswordValid = await bcrypt.compare(password, user.password);
     
-            if (isPasswordValid) {
-                const payload = {
-                    codemeli,
-                    role: user.role,
-                    firstname: user.firstname,
-                    lastname: user.lastname,
-                    ensurance: user.ensurance,
-                    image_url: user.image_url
-                };
-    
-                // Add user_id to the token payload only if the table is 'user'
-                if (tableName === 'user') {
-                    payload.user_id = user.user_id;
-                    setLoggedInUser(user.user_id);
-                }
-                
-                const token = jwt.sign(payload, secret, { expiresIn: '24h' });
-                return res.status(200).json({ token, message: 'با موفقیت وارد شدید' });
-            } else {
-                return res.status(401).json({ message: 'کدملی، رمز عبور یا نقش شما اشتباه است' });
+            if (!isPasswordValid) {
+                return res.status(401).json({ message: 'اطلاعات وارد شده صحیح نیست' });
             }
+    
+            const payload = {
+                codemeli,
+                role: user.role,
+                firstname: user.firstname,
+                lastname: user.lastname,
+                image_url: user.image_url,
+                ...(tableName === 'user' && { user_id: user.user_id })
+            };
+    
+            const token = jwt.sign(payload, secret, { expiresIn: '24h' });
+    
+            // Register user as logged in
+            if (tableName === 'user') {
+                require('../model/notification').setLoggedInUser(user.user_id);
+            }
+    
+            return res.status(200).json({ token, message: 'با موفقیت وارد شدید' });
         } catch (error) {
             console.error('Login error:', error);
             return res.status(500).json({ message: 'خطایی در سرور رخ داده است' });
         }
     }
+    
     
     
     async getMe(req, res) {
@@ -763,7 +759,23 @@ class Auth {
         }
     }
     
+    async notificaionLogs(req, res) {
+        const user_id  = req.params;
+        try {
+            const query = 'SELECT * FROM logs WHERE user_id = ? ORDER BY time DESC';
+            const [logs] = await db.connection.execute(query, [userId]);
     
+            if (logs.length === 0) {
+                return res.status(404).json({ message: 'No notification logs found' });
+            }
+    
+            res.status(200).json({ logs });
+        } catch (error) {
+            console.error('Error fetching notification logs:', error);
+            res.status(500).json({ message: 'Server error' });
+        }
+
+    } 
     
 }
 module.exports = new Auth();

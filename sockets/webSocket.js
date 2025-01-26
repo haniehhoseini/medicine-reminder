@@ -1,5 +1,5 @@
 const WebSocket = require('ws');
-const clients = {}; // ذخیره ارتباطات کاربران بر اساس userId
+const clients = {}; // Store user connections by userId
 
 const initWebSocket = (server) => {
     const wss = new WebSocket.Server({ server });
@@ -11,8 +11,8 @@ const initWebSocket = (server) => {
             try {
                 const data = JSON.parse(message);
                 if (data.type === 'auth') {
-                    const userId = data.userId; // دریافت userId برای احراز هویت
-                    clients[userId] = ws; // ذخیره ارتباط کاربر
+                    const userId = data.userId; // Retrieve userId for authentication
+                    clients[userId] = ws; // Store user connection
                     console.log(`User ${userId} authenticated and connected`);
                 }
             } catch (err) {
@@ -23,7 +23,7 @@ const initWebSocket = (server) => {
         ws.on('close', () => {
             for (const userId in clients) {
                 if (clients[userId] === ws) {
-                    delete clients[userId]; // حذف ارتباط کاربر هنگام قطع اتصال
+                    delete clients[userId]; // Remove user connection upon disconnection
                     console.log(`User ${userId} disconnected`);
                 }
             }
@@ -34,7 +34,7 @@ const initWebSocket = (server) => {
 const sendNotificationToUser = (userId, message) => {
     const ws = clients[userId];
     if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ message })); // ارسال پیام به کاربر
+        ws.send(JSON.stringify({ message })); // Send message to user
         console.log(`Notification sent to user ${userId}`);
     } else {
         console.log(`No active WebSocket connection for user ${userId}`);
