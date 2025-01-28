@@ -166,10 +166,7 @@ class Medicine {
         return res.status(201).json({ message: 'دارو با موفقیت ثبت شد' });
        
     };
-
-    
-    
-    
+  
     async updateMedicine(req, res) {
         const old_ATCC_code = req.params.ATCC_code;
         const items = req.body;
@@ -252,8 +249,6 @@ class Medicine {
             throw message;
         }
     }
-    
-
 
     async deleteMedicine(req, res) {
         const items = req.body;
@@ -286,7 +281,6 @@ class Medicine {
         }
     }
     
-
     async getImageUrls(medicineCode) {
 
         const query = "SELECT * FROM medicine WHERE ATCC_code = ?";
