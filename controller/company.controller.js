@@ -6,6 +6,7 @@ exports.company = async (req , res ) =>{
  };
 
  exports.searchCompanyByName = async (req , res ) =>{
-    let answer = await company.searchCompanyByName(req, res);
+    let answer = await company.searchCompanyByName(req.params.firstname);
+    console.log(req.params.firstname)
     res.json(answer);
  };

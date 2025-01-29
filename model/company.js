@@ -8,13 +8,24 @@ class Company{
         return list;
     }
 
-    async searchCompanyByName(req, res) {
-        const { firstname } = req.params;
-        const query = "SELECT * FROM company WHERE firstname LIKE ?";
-        const searchValue = `%${firstname}%`; // برای جستجوی تطبیقی
-        let [list] = await db.connection.execute(query, [searchValue]);
+    async searchCompanyByName(firstname) {
+        let query;
+        let params = [];
+    
+        if (!firstname || firstname.trim() === "") {
+            // اگر ورودی خالی باشد، کل لیست بازگردانده می‌شود
+            query = "SELECT * FROM company";
+        } else {
+            // جستجوی تطبیقی
+            query = "SELECT * FROM company WHERE firstname LIKE ?";
+            params = [`%${firstname}%`];
+        }
+    
+        let [list] = await db.connection.execute(query, params);
         return list;
     }
+    
+    
 }
 
 module.exports = new Company();
