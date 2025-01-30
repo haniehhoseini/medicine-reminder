@@ -3,7 +3,6 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const secret = require('../config/keys').secretOrKey;
 const Roles = require('../shared/role');
-const {setLoggedInUser} = require('../model/notification');
 
 
 
@@ -132,31 +131,33 @@ class Auth {
         const items = req.body;
     
         try {
-            const decoded = req.user;
-            console.log(decoded);
-            const { codemeli } = decoded;
+            const { user_id } = req.params;
+            if (!user_id) {
+                return res.status(400).json({ message: 'شناسه کاربر ارسال نشده است' });
+            }
+    
             const { password, firstname, lastname, mobile, address, gender, image_url, birthday, relatives_id, ensurance } = items;
     
-            // Format values
+            // فرمت مقادیر
             const formattedBirthday = this.formatDate(birthday);
             const formattedRelativesId = this.formatInteger(relatives_id);
             const hashpassword = password ? await bcrypt.hash(password, 10) : null;
     
-            // SQL query
+            // کوئری SQL
             const query = `UPDATE user SET
-                password = ?,
-                firstname = ?,
-                lastname = ?,
-                mobile = ?,
-                address = ?,
-                gender = ?,
-                image_url = ?,
-                birthday = ?,
-                relatives_id = ?,
-                ensurance = ?
-                WHERE codemeli = ?`;
+                password = COALESCE(?, password),
+                firstname = COALESCE(?, firstname),
+                lastname = COALESCE(?, lastname),
+                mobile = COALESCE(?, mobile),
+                address = COALESCE(?, address),
+                gender = COALESCE(?, gender),
+                image_url = COALESCE(?, image_url),
+                birthday = COALESCE(?, birthday),
+                relatives_id = COALESCE(?, relatives_id),
+                ensurance = COALESCE(?, ensurance)
+                WHERE user_id = ?`;
     
-            // Values array
+            // آرایه مقادیر
             const values = [
                 hashpassword,
                 firstname ?? null,
@@ -168,31 +169,24 @@ class Auth {
                 formattedBirthday,
                 formattedRelativesId,
                 ensurance ?? null,
-                codemeli
+                user_id
             ];
     
-            try {
-                const [result] = await db.connection.execute(query, values);
-                return res.status(200).json({ message: 'کاربر با موفقیت اپدیت شد', result });
-            } catch (dbError) {
-                console.error('Database update error:', dbError);
-                return res.status(500).json({ message: 'خطای داخلی سرور. لطفاً دوباره تلاش کنید.' });
+            // اجرای کوئری
+            const [result] = await db.connection.execute(query, values);
+    
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ message: 'کاربری با این شناسه یافت نشد' });
             }
+    
+            return res.status(200).json({ message: 'کاربر با موفقیت بروزرسانی شد', result });
     
         } catch (error) {
-            console.error('Error verifying token:', error);
-    
-            if (error.name === 'TokenExpiredError') {
-                return res.status(401).json({ message: 'لطفا یکبار دیگر وارد شوید' });
-            } else if (error.name === 'JsonWebTokenError') {
-                return res.status(401).json({ message: 'احراز هویت نامعتبر است' });
-            } else {
-                return res.status(500).json({ message: 'خطایی در سرور رخ داده است' });
-            }
+            console.error('خطا در پردازش درخواست:', error);
+            return res.status(500).json({ message: 'خطایی در سرور رخ داده است' });
         }
     }
     
-
     async exitRegisterDoctor(items) {
         const { codemeli } = items;
         const query = 'SELECT * FROM doctor WHERE codemeli = ?';
@@ -255,8 +249,11 @@ class Auth {
         const items = req.body;
     
         try {
-            const decoded = req.user;
-            const { codemeli } = decoded;
+            const { doctor_id } = req.params;
+            if (!doctor_id) {
+                return res.status(400).json({ message: 'شناسه پزشک ارسال نشده است' });
+            }
+    
             const { 
                 password, 
                 firstname, 
@@ -271,26 +268,26 @@ class Auth {
                 code 
             } = items;
     
-            // Format values
+            // فرمت مقادیر
             const formattedBirthday = this.formatDate(birthday);
             const hashpassword = password ? await bcrypt.hash(password, 10) : null;
     
-            // SQL query
+            // کوئری SQL
             const query = `UPDATE doctor SET 
-                password = ?, 
-                firstname = ?, 
-                lastname = ?, 
-                address = ?, 
-                city = ?, 
-                hospital = ?, 
-                gender = ?, 
-                image_url = ?, 
-                birthday = ?, 
-                expertise = ?, 
-                code = ? 
-                WHERE codemeli = ?`;
+                password = COALESCE(?, password), 
+                firstname = COALESCE(?, firstname), 
+                lastname = COALESCE(?, lastname), 
+                address = COALESCE(?, address), 
+                city = COALESCE(?, city), 
+                hospital = COALESCE(?, hospital), 
+                gender = COALESCE(?, gender), 
+                image_url = COALESCE(?, image_url), 
+                birthday = COALESCE(?, birthday), 
+                expertise = COALESCE(?, expertise), 
+                code = COALESCE(?, code) 
+                WHERE doctor_id = ?`;
     
-            // Values array
+            // آرایه مقادیر
             const values = [
                 hashpassword,
                 firstname ?? null,
@@ -303,30 +300,23 @@ class Auth {
                 formattedBirthday,
                 expertise ?? null,
                 code ?? null,
-                codemeli
+                doctor_id
             ];
     
-            try {
-                const [result] = await db.connection.execute(query, values);
-                return res.status(200).json({ message: 'دکتر با موفقیت بروزرسانی شد', result });
-            } catch (dbError) {
-                console.error('Database update error:', dbError);
-                return res.status(500).json({ message: 'خطای داخلی سرور. لطفاً دوباره تلاش کنید.' });
+            // اجرای کوئری
+            const [result] = await db.connection.execute(query, values);
+    
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ message: 'پزشکی با این شناسه یافت نشد' });
             }
+    
+            return res.status(200).json({ message: 'پزشک با موفقیت بروزرسانی شد', result });
     
         } catch (error) {
-            console.error('Error verifying token:', error);
-    
-            if (error.name === 'TokenExpiredError') {
-                return res.status(401).json({ message: 'لطفا یکبار دیگر وارد شوید' });
-            } else if (error.name === 'JsonWebTokenError') {
-                return res.status(401).json({ message: 'احراز هویت نامعتبر است' });
-            } else {
-                return res.status(500).json({ message: 'خطایی در سرور رخ داده است' });
-            }
+            console.error('خطا در پردازش درخواست:', error);
+            return res.status(500).json({ message: 'خطایی در سرور رخ داده است' });
         }
     }
-    
 
     async exitRegisterCompany(items){
         const { codemeli } = items;
@@ -411,9 +401,10 @@ class Auth {
         const items = req.body;
     
         try {
-            const decoded = req.user;
-            const { codemeli } = decoded;
-            console.log(decoded);
+            const { company_id } = req.params;
+            if (!company_id) {
+                return res.status(400).json({ message: 'شناسه شرکت ارسال نشده است' });
+            }
     
             const {       
                 password,
@@ -424,20 +415,20 @@ class Auth {
                 image_url 
             } = items;
     
-            // SQL query
-            const query = `UPDATE company SET 
-                password = ?, 
-                firstname = ?, 
-                lastname = ?, 
-                license_code = ?, 
-                mobile = ?, 
-                image_url = ? 
-                WHERE codemeli = ?`;
-    
-            // Hash password if provided
+            // هش کردن رمز عبور در صورت وجود
             const hashpassword = password ? await bcrypt.hash(password, 10) : null;
     
-            // Values array
+            // کوئری SQL
+            const query = `UPDATE company SET 
+                password = COALESCE(?, password), 
+                firstname = COALESCE(?, firstname), 
+                lastname = COALESCE(?, lastname), 
+                license_code = COALESCE(?, license_code), 
+                mobile = COALESCE(?, mobile), 
+                image_url = COALESCE(?, image_url) 
+                WHERE company_id = ?`;
+    
+            // مقادیر جایگذاری در کوئری
             const values = [
                 hashpassword,
                 firstname ?? null,
@@ -445,31 +436,23 @@ class Auth {
                 license_code ?? null,
                 mobile ?? null,
                 image_url ?? null,
-                codemeli
+                company_id
             ];
     
-            // Execute query
-            try {
-                const [result] = await db.connection.execute(query, values);
-                return res.status(200).json({ message: 'شرکت با موفقیت بروزرسانی شد', result });
-            } catch (dbError) {
-                console.error('Database update error:', dbError);
-                return res.status(500).json({ message: 'خطای داخلی سرور. لطفاً دوباره تلاش کنید.' });
+            // اجرای کوئری
+            const [result] = await db.connection.execute(query, values);
+    
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ message: 'شرکتی با این شناسه یافت نشد' });
             }
+    
+            return res.status(200).json({ message: 'شرکت با موفقیت بروزرسانی شد', result });
     
         } catch (error) {
-            console.error('Error verifying token:', error);
-    
-            if (error.name === 'TokenExpiredError') {
-                return res.status(401).json({ message: 'لطفا یکبار دیگر وارد شوید' });
-            } else if (error.name === 'JsonWebTokenError') {
-                return res.status(401).json({ message: 'احراز هویت نامعتبر است' });
-            } else {
-                return res.status(500).json({ message: 'خطایی در سرور رخ داده است' });
-            }
+            console.error('خطا در پردازش درخواست:', error);
+            return res.status(500).json({ message: 'خطایی در سرور رخ داده است' });
         }
     }
-    
 
     async exitRegisterRelatives(items){
         const { codemeli } = items;
@@ -548,8 +531,11 @@ class Auth {
         const items = req.body;
     
         try {
-            const decoded = req.user;
-            const { codemeli } = decoded;
+            const { relatives_id } = req.params;
+            if (!relatives_id) {
+                return res.status(400).json({ message: 'شناسه وابسته ارسال نشده است' });
+            }
+    
             const {
                 password, 
                 firstname, 
@@ -559,20 +545,20 @@ class Auth {
                 image_url 
             } = items;
     
-            // SQL query
-            const query = `UPDATE relatives SET 
-                password = ?, 
-                firstname = ?, 
-                lastname = ?, 
-                mobile = ?, 
-                user_id = ?, 
-                image_url = ? 
-                WHERE codemeli = ?`;
-    
-            // Hash password if provided
+            // هش کردن رمز عبور در صورت وجود
             const hashpassword = password ? await bcrypt.hash(password, 10) : null;
     
-            // Values array
+            // کوئری SQL
+            const query = `UPDATE relatives SET 
+                password = COALESCE(?, password), 
+                firstname = COALESCE(?, firstname), 
+                lastname = COALESCE(?, lastname), 
+                mobile = COALESCE(?, mobile), 
+                user_id = COALESCE(?, user_id), 
+                image_url = COALESCE(?, image_url) 
+                WHERE relatives_id = ?`;
+    
+            // مقادیر جایگذاری در کوئری
             const values = [
                 hashpassword,
                 firstname ?? null,
@@ -580,30 +566,24 @@ class Auth {
                 mobile ?? null,
                 user_id ?? null,
                 image_url ?? null,
-                codemeli
+                relatives_id
             ];
     
-            // Execute query
-            try {
-                const [result] = await db.connection.execute(query, values);
-                return res.status(200).json({ message: 'اطلاعات با موفقیت بروزرسانی شد', result });
-            } catch (dbError) {
-                console.error('Database update error:', dbError);
-                return res.status(500).json({ message: 'خطای داخلی سرور. لطفاً دوباره تلاش کنید.' });
+            // اجرای کوئری
+            const [result] = await db.connection.execute(query, values);
+    
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ message: 'وابسته‌ای با این شناسه یافت نشد' });
             }
+    
+            return res.status(200).json({ message: 'اطلاعات وابسته با موفقیت بروزرسانی شد', result });
     
         } catch (error) {
-            console.error('Error verifying token:', error);
-    
-            if (error.name === 'TokenExpiredError') {
-                return res.status(401).json({ message: 'لطفا یکبار دیگر وارد شوید' });
-            } else if (error.name === 'JsonWebTokenError') {
-                return res.status(401).json({ message: 'احراز هویت نامعتبر است' });
-            } else {
-                return res.status(500).json({ message: 'خطایی در سرور رخ داده است' });
-            }
+            console.error('خطا در پردازش درخواست:', error);
+            return res.status(500).json({ message: 'خطایی در سرور رخ داده است' });
         }
     }
+    
     
 
     async login(req, res) {

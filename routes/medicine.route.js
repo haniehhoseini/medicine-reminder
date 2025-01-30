@@ -39,7 +39,6 @@ router.get('/medicinename/:page',  medicine)
       .get('/medicinepicture/:ATCC_code',  getImageUrls)
       .get('/medicinebycompany/:company_id', authenticateToken, authorizeRole([Roles.ADMIN, Roles.PHARMACIST]), getMedicineByCompanyID)
       .post('/upload-prescription/:user_id' , upload.single('prescription'), processPrescription)
-      .get('/get-my-medicine/:user_id', fetchUserMedications)
-      .get('/notifsend/:user_id' ,getLatestLogByUserId);
+      .get('/get-my-medicine/:user_id', fetchUserMedications);
 
 module.exports = router;

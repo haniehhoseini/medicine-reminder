@@ -21,10 +21,10 @@ router.post('/login', login)
       .post('/registercompany', registerCompany)
       .post('/registerrelatives', registerRelatives)
       .post('/getme', getMe)
-      .put('/updatedoctor', authenticateToken , updateDoctor)
-      .put('/updatepatient', authenticateToken, updatePatient)
-      .put('/updatecompany', authenticateToken, updateCompany)
-      .put('/updaterelatives', authenticateToken, updateRelatives);
+      .put('/updatedoctor/:doctor_id', authenticateToken , updateDoctor)
+      .put('/updatepatient/:user_id', updatePatient)
+      .put('/updatecompany/:company_id', authenticateToken, updateCompany)
+      .put('/updaterelatives/:relatives_id', authenticateToken, updateRelatives);
 
 
 module.exports = router;
