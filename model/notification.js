@@ -7,9 +7,9 @@ const { sendNotificationToUser } = require('../sockets/webSocket');
 let loggedInUsers = new Set();
 
 // Set logged-in user when a new user logs in
-exports.setLoggedInUser = (user_id) => {
-    loggedInUsers.add(user_id); // Add user to the set of logged-in users
-    console.log(`User logged in: ${user_id}`);
+exports.setLoggedInUser = (userId) => {
+    loggedInUsers.add(userId); // Add user to the set of logged-in users
+    console.log(`User logged in: ${userId}`);
 };
 
 // Function to check if the current time matches the notification time
@@ -34,14 +34,14 @@ exports.scheduleNotifications = () => {
         }
 
         try {
-            for (const user_id of loggedInUsers) {
+            for (const userId of loggedInUsers) {
                 // Retrieve prescriptions for the current user
                 const query = `
                     SELECT * 
                     FROM prescription 
                     WHERE user_id = ?
                 `;
-                const [prescriptions] = await db.connection.execute(query, [user_id]);
+                const [prescriptions] = await db.connection.execute(query, [userId]);
 
                 prescriptions.forEach((prescription) => {
                     const drugInterval = parseInt(prescription.clock, 10); // Time interval for drug intake (in hours)
@@ -52,15 +52,15 @@ exports.scheduleNotifications = () => {
                         
                         // ذخیره لاگ نوتیفیکیشن در دیتابیس
                         const query = `INSERT INTO logs (user_id, message, time) VALUES (?, ?, ?)`;
-                        db.connection.execute(query, [user_id, message, now])
+                        db.connection.execute(query, [userId, message, now])
                             .then(() => {
-                                console.log(`Notification log saved for user ${user_id}`);
+                                console.log(`Notification log saved for user ${userId}`);
                             })
                             .catch((err) => {
                                 console.error('Error saving notification log:', err);
                             });
                 
-                        sendNotificationToUser(user_id, message); // ارسال نوتیفیکیشن به کاربر
+                        sendNotificationToUser(userId, message); // ارسال نوتیفیکیشن به کاربر
                     }
                 });
             }
