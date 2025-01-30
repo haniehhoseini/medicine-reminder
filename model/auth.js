@@ -622,7 +622,7 @@ class Auth {
         }
     
         const query = `
-            SELECT password, role, firstname, lastname, image_url${tableName === 'user' ? ', user_id' : ''} 
+            SELECT password, role, firstname, lastname, image_url, ${tableName}_id 
             FROM ${tableName} 
             WHERE codemeli = ?
         `;
@@ -646,13 +646,16 @@ class Auth {
                 firstname: user.firstname,
                 lastname: user.lastname,
                 image_url: user.image_url,
-                ...(tableName === 'user' && { user_id: user.user_id })
+                user_id: user.user_id || null,
+                doctor_id: user.doctor_id || null,
+                company_id: user.company_id || null,
+                relatives_id: user.relatives_id || null
             };
     
             const token = jwt.sign(payload, secret, { expiresIn: '24h' });
     
             // Register user as logged in
-            if (tableName === 'user') {
+            if (user.user_id) {
                 require('../model/notification').setLoggedInUser(user.user_id);
             }
     
@@ -667,58 +670,46 @@ class Auth {
     
     async getMe(req, res) {
         try {
-            const { user_id } = req.params;
+            const { user_id, doctor_id, company_id, relatives_id } = req.body;
             
-    
-            if (!user_id) {
+            // تعیین شناسه اصلی بر اساس داده‌های ارسالی
+            const id = user_id || doctor_id || company_id || relatives_id;
+            if (!id) {
                 return res.status(400).json({ error: 'شناسه کاربر ارسال نشده است' });
             }
     
-            // دریافت اطلاعات اولیه کاربر شامل نقش
-            const userQuery = `SELECT role FROM user WHERE user_id = ?`;
-            const [userRows] = await db.connection.execute(userQuery, [user_id]);
-    
-            if (userRows.length === 0) {
-                return res.status(404).json({ error: 'کاربری با این شناسه یافت نشد' });
+            // تعیین جدول مناسب بر اساس نوع شناسه ارسال شده
+            const tableMapping = {
+                user_id: 'user',
+                doctor_id: 'doctor',
+                company_id: 'company',
+                relatives_id: 'relatives'
+            };
+            
+            const tableName = Object.keys(tableMapping).find(key => req.body[key]);
+            if (!tableName) {
+                return res.status(400).json({ error: 'نوع شناسه نامعتبر است' });
             }
     
-            const userRole = userRows[0].role;
-            let tableName;
-    
-            switch (userRole) {
-                case 'doctor':
-                    tableName = 'doctor';
-                    break;
-                case 'pharmacist':
-                    tableName = 'company';
-                    break;
-                case 'relatives':
-                    tableName = 'relatives';
-                    break;
-                case 'patient':
-                    tableName = 'user';
-                    break;
-                default:
-                    return res.status(400).json({ error: 'نقش کاربری نامعتبر است' });
-            }
-    
-            // دریافت اطلاعات کامل از جدول مربوطه
-            const query = `SELECT * FROM ${tableName} WHERE user_id = ?`;
-            const [rows] = await db.connection.execute(query, [user_id]);
-    
+            const selectedTable = tableMapping[tableName];
+            
+            // دریافت اطلاعات از جدول مرتبط
+            const query = `SELECT * FROM ${selectedTable} WHERE ${tableName} = ?`;
+            const [rows] = await db.connection.execute(query, [id]);
+            
             if (rows.length === 0) {
                 return res.status(404).json({ error: 'کاربری با این مشخصات یافت نشد' });
             }
     
             const user = rows[0];
             return res.status(200).json({ message: 'اطلاعات کاربر با موفقیت دریافت شد', user });
-    
         } catch (error) {
             console.error('Error fetching user information:', error);
-    
             return res.status(500).json({ message: 'خطایی در سرور رخ داده است' });
         }
     }
+    
+    
     
     async notificaionLogs(req, res) {
         const user_id  = req.params;

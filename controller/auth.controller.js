@@ -81,7 +81,6 @@ exports.updateRelatives = async (req, res) => {
 exports.getMe = async(req , res) => {
     try {
         await Auth.getMe(req, res);
-        //res.json(answer);
     } catch (message) {
         res.status(500).json({ message: 'Internal server error' });
     }
