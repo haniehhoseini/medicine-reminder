@@ -1,5 +1,6 @@
 const db = require('../utils/database');
 
+
 class Company{
 
     async getCompany(){
@@ -8,23 +9,25 @@ class Company{
         return list;
     }
 
-    async searchCompanyByName(firstname) {
-        let query;
-        let params = [];
+    async searchCompanyByName(items) {
+        const { firstname } = items;
+        let query = "SELECT * FROM company WHERE 1=1";
+        let queryParams = [];
     
-        if (!firstname || firstname.trim() === "") {
-            // اگر ورودی خالی باشد، کل لیست بازگردانده می‌شود
-            query = "SELECT * FROM company";
-        } else {
-            // جستجوی تطبیقی
-            query = "SELECT * FROM company WHERE firstname LIKE ?";
-            params = [`%${firstname}%`];
+        if (firstname) {
+            query += " AND firstname LIKE ?";
+            queryParams.push(`%${firstname}%`);
         }
     
-        let [list] = await db.connection.execute(query, params);
-        return list;
+        console.log(query);
+        console.log(queryParams);
+        try {
+            const [rows] = await db.connection.execute(query, queryParams);
+            return rows;
+        } catch (message) {
+            throw message;
+        }
     }
-    
     
 }
 

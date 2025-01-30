@@ -7,7 +7,6 @@ class Doctor {
         let [list] = await db.connection.execute(query);
         return list;
     }
-
     async getDoctorspatients() {
         const query = "SELECT p.* FROM patient p INNER JOIN doctor d ON p.codeMeli_patient = d.codeMeli_patient";
         
@@ -18,7 +17,6 @@ class Doctor {
             throw message;
         }
     }
-
     async searchDoctors(items) {
         const { firstname , expertise, code } = items;
         let query = "SELECT * FROM doctor WHERE 1=1";

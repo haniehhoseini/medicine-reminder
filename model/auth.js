@@ -201,93 +201,54 @@ class Auth {
     }
 
     async registerDoctor(req, res) {
-        const items = req.body;
-        const requiredFields = [
-            'codemeli', 
-            'password', 
-            'firstname', 
-            'lastname', 
-            'mobile', 
-            'address', 
-            'gender', 
-            'birthday',
-            'expertise',
-            'code',
-            'city',
-            'hospital',
-        ];
-    
-        for (const field of requiredFields) {
-            if (!items[field]) {
-                return res.status(401).json({ message: `فیلد ${field} الزامی است و نباید خالی باشد.` });
-            }
-        }
-        if (await this.exitRegisterDoctor(items)) {
-        const { 
-            codemeli, 
-            password, 
-            firstname, 
-            lastname, 
-            address,
-            city,
-            hospital, 
-            gender, 
-            image_url, 
-            birthday, 
-            expertise,
-            code,
-            role
-        } = items;
+        try {
+            const items = req.body;
+            const requiredFields = [
+                'codemeli', 'password', 'firstname', 'lastname', 
+                'mobile', 'address', 'gender', 'birthday', 
+                'expertise', 'code', 'city', 'hospital'
+            ];
 
-        const query = `INSERT INTO doctor (
-            codemeli, 
-            password, 
-            firstname, 
-            lastname, 
-            address,
-            city,
-            hospital, 
-            gender, 
-            image_url, 
-            birthday, 
-            expertise,
-            code,
-            role ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+            for (const field of requiredFields) {
+                if (!items[field]) {
+                    return res.status(401).json({ message: `فیلد ${field} الزامی است و نباید خالی باشد.` });
+                }
+            }
+
+            // Extract and format data
+            const {
+                codemeli, password, firstname, lastname, 
+                address, city, hospital, gender, image_url, 
+                birthday, expertise, code, role
+            } = items;
+
+            const query = `INSERT INTO doctor (
+                codemeli, password, firstname, lastname, 
+                address, city, hospital, gender, image_url, 
+                birthday, expertise, code, role
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
             const hashpassword = await bcrypt.hash(password, 10);
-            const formattedBirthday = this.formatDate(birthday);
+            const formattedBirthday = this.formatDate ? this.formatDate(birthday) : birthday;
 
-    
-            let finalImageUrl = image_url;
-            if (!finalImageUrl) {
-                finalImageUrl = 'https://icones.pro/wp-content/uploads/2021/03/symbole-du-docteur-icone-png-vert.png';
-            }
+            let finalImageUrl = image_url || 'https://icones.pro/wp-content/uploads/2021/03/symbole-du-docteur-icone-png-vert.png';
 
             const values = [
-                codemeli ?? null, 
-                hashpassword, 
-                firstname ?? null, 
-                lastname ?? null, 
-                address ?? null,
-                city ?? null,
-                hospital ?? null, 
-                gender ?? null, 
-                finalImageUrl, 
-                formattedBirthday, 
-                expertise ?? null,
-                code ?? null,
+                codemeli ?? null, hashpassword, firstname ?? null, 
+                lastname ?? null, address ?? null, city ?? null, 
+                hospital ?? null, gender ?? null, finalImageUrl, 
+                formattedBirthday, expertise ?? null, code ?? null, 
                 role ?? Roles.DOCTOR
             ];
 
-            try {
-                const [res] = await db.connection.execute(query, values);
-                return res.status(201).json({ message: 'کاربر با موفقیت ثبت شد', res });
-            } catch (message) {
-                throw message;  
-            }
-        } else {
-            return res.status(401).json({ message: 'کاربری با این مشخصات قبلا ثبت نام کرده است' });
+            const [dbResult] = await db.connection.execute(query, values);
+            return res.status(201).json({ message: 'کاربر با موفقیت ثبت شد', result: dbResult });
+
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: 'خطای داخلی سرور لطفا بعدا تلاش کنید' });
         }
+    
     }
 
     async doctorUpdate(req, res) {

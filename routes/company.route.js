@@ -4,6 +4,6 @@ const router = express.Router();
 const { company, searchCompanyByName } = require('../controller/company.controller');
 
 router.get('/companyname' , company)
-        .get('/seachbyname/:firstname' , searchCompanyByName);
+      .post('/seachbyname' , searchCompanyByName);
 
 module.exports = router;

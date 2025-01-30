@@ -20,9 +20,9 @@ exports.registerPatient = async (req, res) => {
 exports.registerDoctor = async (req, res) => {
     try {
         await Auth.registerDoctor(req, res);
-        //res.json(answer);
-    } catch (message) {
-        res.status(500).json({ message: 'Internal server error' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'خطای داخلی سرور لطفا بعدا تلاش کنید' });
     }
 }
 
