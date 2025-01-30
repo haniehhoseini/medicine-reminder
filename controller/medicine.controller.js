@@ -112,4 +112,26 @@ exports.fetchUserMedications = async (req, res) => {
     }catch(error) {
         return res.status(500).json('.لطفا چند لحظه ی دیگر تلاش کنید');
     }
-}
+};
+exports.getLatestLogByUserId = async (req, res) => {
+    try {
+        const { user_id } = req.params;
+        const query = `
+            SELECT * 
+            FROM logs 
+            WHERE user_id = ? 
+            ORDER BY time DESC 
+            LIMIT 1
+        `;
+        const [rows] = await db.connection.execute(query, [user_id]);
+
+        if (rows.length > 0) {
+            return rows[0]; // بازگرداندن جدیدترین لاگ
+        } else {
+            return null; // اگر لاگی وجود نداشت
+        }
+    } catch (error) {
+        console.error('Error fetching latest log:', error);
+        throw error;
+    }
+};

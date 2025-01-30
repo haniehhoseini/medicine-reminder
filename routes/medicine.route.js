@@ -13,7 +13,8 @@ const { medicine,
       getImageUrls, 
       getMedicineByCompanyID,
       processPrescription,
-      fetchUserMedications } = require('../controller/medicine.controller');
+      fetchUserMedications,
+      getLatestLogByUserId } = require('../controller/medicine.controller');
 
 
 const storage = multer.diskStorage({
@@ -38,6 +39,7 @@ router.get('/medicinename/:page',  medicine)
       .get('/medicinepicture/:ATCC_code',  getImageUrls)
       .get('/medicinebycompany/:company_id', authenticateToken, authorizeRole([Roles.ADMIN, Roles.PHARMACIST]), getMedicineByCompanyID)
       .post('/upload-prescription/:user_id' , upload.single('prescription'), processPrescription)
-      .get('/get-my-medicine/:user_id', fetchUserMedications);
+      .get('/get-my-medicine/:user_id', fetchUserMedications)
+      .get('/notifsend/:user_id' ,getLatestLogByUserId);
 
 module.exports = router;

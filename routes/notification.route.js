@@ -5,4 +5,5 @@ const router = express.Router();
 
 router.get('/notification/:user_id',  notificaionLogs);
 
+
 module.exports = router;
