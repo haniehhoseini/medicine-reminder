@@ -9,3 +9,9 @@ exports.company = async (req , res ) =>{
     let answer = await company.searchCompanyByName(req.body);
     res.json(answer);
  };
+
+ exports.getCompanyById = async (req , res ) =>{
+    let answer = await company.getCompanyById(req.params.id);
+    console.log(req.params.id);
+    res.json(answer);
+};

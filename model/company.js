@@ -28,7 +28,15 @@ class Company{
             throw message;
         }
     }
-    
+    async getCompanyById(id) {
+        const query = "SELECT * FROM company WHERE company_id = ?";
+        try {
+            const [rows] = await db.connection.execute(query, [id]);
+            return rows[0];
+        } catch (message) {
+            throw message;
+        }
+    }
 }
 
 module.exports = new Company();

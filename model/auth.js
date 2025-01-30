@@ -583,9 +583,6 @@ class Auth {
             return res.status(500).json({ message: 'خطایی در سرور رخ داده است' });
         }
     }
-    
-    
-
     async login(req, res) {
         const { codemeli, password, role } = req.body;
     
@@ -645,9 +642,7 @@ class Auth {
             return res.status(500).json({ message: 'خطایی در سرور رخ داده است' });
         }
     }
-    
-    
-    
+  
     async getMe(req, res) {
         try {
             const { user_id, doctor_id, company_id, relatives_id } = req.body;
@@ -688,9 +683,7 @@ class Auth {
             return res.status(500).json({ message: 'خطایی در سرور رخ داده است' });
         }
     }
-    
-    
-    
+ 
     async notificaionLogs(req, res) {
         const user_id  = req.params;
         try {
