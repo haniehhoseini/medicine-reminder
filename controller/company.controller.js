@@ -12,6 +12,5 @@ exports.company = async (req , res ) =>{
 
  exports.getCompanyById = async (req , res ) =>{
     let answer = await company.getCompanyById(req.params.id);
-    console.log(req.params.id);
     res.json(answer);
 };

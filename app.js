@@ -25,7 +25,7 @@ app.use("/api/", companyRoute);
 app.use("/api/", doctorRoute);
 app.use("/api/", medicineRoute);
 app.use('/api/enums', enumsRoles);
-app.use('/api', notificationsRoute);  // اتصال مسیر
+app.use('/api/', notificationsRoute);  
 
 // Default route for unknown paths
 app.use((req, res) => {

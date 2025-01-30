@@ -683,24 +683,7 @@ class Auth {
             return res.status(500).json({ message: 'خطایی در سرور رخ داده است' });
         }
     }
- 
-    async notificaionLogs(req, res) {
-        const user_id  = req.params;
-        try {
-            const query = 'SELECT * FROM logs WHERE user_id = ? ORDER BY time DESC';
-            const [logs] = await db.connection.execute(query, [userId]);
-    
-            if (logs.length === 0) {
-                return res.status(404).json({ message: 'No notification logs found' });
-            }
-    
-            res.status(200).json({ logs });
-        } catch (error) {
-            console.error('Error fetching notification logs:', error);
-            res.status(500).json({ message: 'Server error' });
-        }
 
-    } 
     
 }
 module.exports = new Auth();

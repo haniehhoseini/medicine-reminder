@@ -129,8 +129,6 @@ class Medicine {
             throw message;
         }
     }
-    
-
 
     async addMedicine(req, res) {
         const medicineData = req.body;

@@ -85,11 +85,3 @@ exports.getMe = async(req , res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 };
-
-exports.notificaionLogs = async(req, res) => {
-    try{
-        await Auth.notificaionLogs(req, res);
-    }catch (message) {
-        res.status(500).json({ message: 'Internal server error' });
-    }
-};

@@ -32,7 +32,6 @@ exports.getMedicineById = async (req, res) => {
 exports.addMedicine = async (req , res) =>{
     try {
         await medicine.addMedicine(req , res);
-        //res.status(200).send(message);
     } catch (message) {
         res.status(500).send('دارو ثبت نشد');
     }
@@ -41,7 +40,6 @@ exports.addMedicine = async (req , res) =>{
 exports.deleteMedicine = async (req , res) =>{
     try {
         await medicine.deleteMedicine(req , res);
-        //res.status(200).send(message);
     } catch (message) {
         res.status(500).send('دارو پاک نشد');
     }
@@ -50,7 +48,6 @@ exports.deleteMedicine = async (req , res) =>{
 exports.updateMedicine = async (req , res) =>{
     try {
         await medicine.updateMedicine(req , res);
-        //res.status(200).send(message);
     } catch (message) {
         res.status(500).send('دارو اپدیت نشد');
     }

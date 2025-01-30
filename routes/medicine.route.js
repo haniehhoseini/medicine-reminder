@@ -13,8 +13,7 @@ const { medicine,
       getImageUrls, 
       getMedicineByCompanyID,
       processPrescription,
-      fetchUserMedications,
-      getLatestLogByUserId } = require('../controller/medicine.controller');
+      fetchUserMedications } = require('../controller/medicine.controller');
 
 
 const storage = multer.diskStorage({
